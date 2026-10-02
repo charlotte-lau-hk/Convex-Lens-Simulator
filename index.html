@@ -20,7 +20,7 @@
       --warning-bg: #fef2f2;
       --warning-border: #fca5a5;
       
-      /* Colorblind Friendly Ray Palette (Okabe-Ito / Wong Accessible Palette) */
+      /* Colorblind Friendly Ray Palette (Okabe-Ito / Wong Palette) */
       --ray-1: #d95f02; /* Rule 1: Vermilion / Orange */
       --ray-2: #0072b2; /* Rule 2: Deep Sky Blue */
       --ray-3: #cc79a7; /* Rule 3: Reddish Purple / Magenta */
@@ -43,6 +43,7 @@
       display: flex;
       flex-direction: column;
       user-select: none;
+      overflow-x: hidden;
     }
 
     /* Mobile Portrait Warning Overlay */
@@ -85,7 +86,7 @@
     }
 
     .title-area h1 {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 700;
       color: var(--text-main);
     }
@@ -123,6 +124,7 @@
       font-size: 0.85rem;
       font-weight: 700;
       color: #1e40af;
+      flex-wrap: wrap;
     }
 
     .step-item {
@@ -143,7 +145,7 @@
       font-size: 0.8rem;
     }
 
-    /* Main Layout Grid */
+    /* Main Layout Grid - Fully Responsive */
     .app-container {
       display: flex;
       flex: 1;
@@ -154,12 +156,23 @@
       width: 100%;
     }
 
+    /* Responsively stack layout on smaller screen widths */
+    @media (max-width: 960px) {
+      .app-container {
+        flex-direction: column;
+      }
+      .panel-column {
+        min-width: 100% !important;
+      }
+    }
+
     /* Left Column: Canvas + Light Data Dashboard + Controls */
     .canvas-column {
       flex: 68;
       display: flex;
       flex-direction: column;
       gap: 12px;
+      min-width: 0; /* Prevents flex children from causing infinite expansion */
     }
 
     .canvas-card {
@@ -171,6 +184,7 @@
       display: flex;
       flex-direction: column;
       position: relative;
+      min-width: 0;
     }
 
     .canvas-header {
@@ -178,6 +192,8 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
     .canvas-title {
@@ -195,6 +211,7 @@
       overflow: hidden;
     }
 
+    /* Fluid canvas dimensions controlled strictly by CSS width */
     canvas {
       display: block;
       width: 100%;
@@ -218,6 +235,7 @@
       gap: 16px;
       box-shadow: var(--shadow-sm);
       border: 1px solid var(--border-color);
+      flex-wrap: wrap;
     }
 
     .data-metric {
@@ -225,6 +243,7 @@
       flex-direction: column;
       align-items: center;
       flex: 1;
+      min-width: 120px;
       text-align: center;
       border-right: 1px solid var(--border-color);
       padding: 0 10px;
@@ -247,11 +266,10 @@
       font-size: 1.35rem;
       font-weight: 800;
       color: var(--primary);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 
     .data-metric-value.highlight {
-      color: #d97706; /* Amber highlight on light background */
+      color: #d97706;
     }
 
     /* Preset & Controls Bar */
@@ -296,7 +314,7 @@
       color: var(--primary);
     }
 
-    /* Ray Toggles (Colorblind Palette Legend) */
+    /* Ray Toggles */
     .ray-toggles {
       display: flex;
       gap: 16px;
@@ -335,7 +353,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      min-width: 320px;
+      min-width: 300px;
     }
 
     .card {
@@ -553,7 +571,7 @@
           <span style="font-size:0.78rem; color:var(--text-muted);" id="snap-hint">Grid Snap: 0.5cm (Auto-snap at f & 2f)</span>
         </div>
         <div class="canvas-wrapper">
-          <canvas id="opticsCanvas" width="900" height="420"></canvas>
+          <canvas id="opticsCanvas"></canvas>
           <div class="canvas-locked-hint" id="lock-hint">🔒 Locked during Play (Press Reset to edit)</div>
         </div>
       </div>
@@ -692,7 +710,7 @@
     // ==========================================
     const FOCAL_LENGTH = 5.0; // cm
     
-    let currentLang = 'en'; // Default set to English as requested
+    let currentLang = 'en'; // Default set to English
     let isPlaying = false;
     let animProgress = 1.0; // 0.0 to 1.0 for ray propagation animation
     let animReqId = null;
@@ -700,7 +718,7 @@
     // State Variables
     let objU = 12.0; // cm, 'inf' for infinity
     let objYLevel = 2; // 0: top (+70px), 1: upper-mid (+35px), 2: center (0px), 3: lower-mid (-35px), 4: bottom (-70px)
-    const H_SPREAD = 70; // Wider vertical height spread
+    const H_SPREAD = 70; // Vertical height spread
 
     let quizAnswers = {
       mag: null,
@@ -716,7 +734,7 @@
     // Canvas Coordinate Constants
     let canvasWidth, canvasHeight, lensX, axisY, SCALE;
 
-    // Bilingual Text Dictionary (Strict Pure Languages, English Default)
+    // Bilingual Text Dictionary
     const I18N = {
       tc: {
         appTitle: "Convex Lens Optics Simulator & Interactive Quiz / 凸透鏡成像模擬器及互動小測",
@@ -804,19 +822,18 @@
       }
     };
 
-    // Setup Canvas Resolution with DevicePixelRatio for Sharp Rendering
     function setupCanvas() {
       const wrapper = document.querySelector('.canvas-wrapper');
       const rect = wrapper.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
 
-      canvasWidth = rect.width;
-      canvasHeight = 420; // Expanded height for wider vertical object levels
+      // DO NOT set canvas.style.width/height in JS!
+      // Allow CSS width: 100% to fluidly handle responsive width layout.
+      canvasWidth = Math.max(300, rect.width);
+      canvasHeight = 420;
 
-      canvas.width = canvasWidth * dpr;
-      canvas.height = canvasHeight * dpr;
-      canvas.style.width = `${canvasWidth}px`;
-      canvas.style.height = `${canvasHeight}px`;
+      canvas.width = Math.round(canvasWidth * dpr);
+      canvas.height = Math.round(canvasHeight * dpr);
 
       ctx.scale(dpr, dpr);
 
@@ -824,7 +841,6 @@
       lensX = canvasWidth * 0.35;
       axisY = canvasHeight * 0.5;
 
-      // Scale: approx 26px per cm
       SCALE = 26;
     }
 
@@ -903,7 +919,6 @@
       updateDataDisplay();
     }
 
-    // Presets & Selections
     function setPreset(val) {
       if (isPlaying) return; // Locked during Play
 
@@ -992,7 +1007,6 @@
       }
     }
 
-    // Play & Reset Flow Logic
     function handlePlay() {
       if (isPlaying) return;
 
@@ -1070,7 +1084,6 @@
       draw();
     }
 
-    // Correct Answers Evaluator
     function getCorrectAnswers() {
       if (objU === 'inf') {
         return { mag: 'diminished', ori: 'inverted', nat: 'real', pos: 'at_f' };
@@ -1124,11 +1137,10 @@
       });
     }
 
-    // Canvas Drawing Engine (Colorblind Accessible)
     function draw() {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-      // 1. Draw Background Grid Lines
+      // 1. Background Grid
       ctx.strokeStyle = '#f1f5f9';
       ctx.lineWidth = 1;
       const gridSize = 13; // 0.5cm grid
@@ -1147,7 +1159,7 @@
       ctx.lineTo(canvasWidth, axisY);
       ctx.stroke();
 
-      // 3. Focal Points & Axis Labels (f = 5cm, 2f = 10cm, 3f = 15cm, 4f = 20cm)
+      // 3. Focal Points & Axis Labels
       const fPx = FOCAL_LENGTH * SCALE;
       const focalPoints = [
         { x: lensX - 2 * fPx, label: '2f' },
@@ -1175,7 +1187,7 @@
       // 4. Convex Lens
       drawConvexLens();
 
-      // Object Coordinates (Wider vertical spread)
+      // Object Coordinates
       let objX, objY, objHeight;
       const hOffsets = [H_SPREAD, H_SPREAD * 0.5, 0, -H_SPREAD * 0.5, -H_SPREAD];
       objHeight = hOffsets[objYLevel];
@@ -1188,26 +1200,22 @@
         drawBulbObject(objX, axisY, objHeight, isPlaying);
       }
 
-      // 5. If Playing, Draw Light Rays & Formed Image
+      // 5. Light Rays & Formed Image
       if (isPlaying) {
         const phys = calcPhysics();
 
         if (objU === 'inf') {
           drawParallelRaysFromInfinity();
-          drawFormedImage(lensX + fPx, axisY, 0, true); // Point image at focal plane
+          drawFormedImage(lensX + fPx, axisY, 0, true);
         } else if (phys.isInf) {
-          // u = f: Image at infinity
           drawParallelRefractedRays(objX, objY);
         } else {
-          // Standard Lens Formula
           const imgX = lensX + phys.v * SCALE;
           const imgHeight = -phys.v / objU * objHeight;
           const imgY = axisY - imgHeight;
 
-          // Rays
           drawRays(objX, objY, imgX, imgY, phys.v < 0);
 
-          // Render Image
           if (animProgress >= 0.8) {
             drawFormedImage(imgX, axisY, imgHeight, false, phys.v < 0);
           }
@@ -1215,7 +1223,6 @@
       }
     }
 
-    // Draw Convex Lens
     function drawConvexLens() {
       const lensHeight = canvasHeight * 0.88;
       const lensTop = axisY - lensHeight / 2;
@@ -1245,7 +1252,6 @@
       ctx.setLineDash([]);
     }
 
-    // Draw Bulb Object with Height Spread
     function drawBulbObject(x, baseY, height, glowing) {
       const t = I18N[currentLang];
       const topY = baseY - height;
@@ -1278,7 +1284,6 @@
       ctx.fillText(t.objLabel, x, baseY + (height >= 0 ? 18 : -12));
     }
 
-    // Draw Object at Infinity Indicator
     function drawInfinityObject() {
       const t = I18N[currentLang];
       ctx.fillStyle = '#1e293b';
@@ -1297,7 +1302,6 @@
       ctx.setLineDash([]);
     }
 
-    // Draw Formed Image
     function drawFormedImage(x, baseY, height, isPoint, isVirtual) {
       const t = I18N[currentLang];
       if (isPoint) {
@@ -1338,7 +1342,6 @@
       ctx.fillText(isVirtual ? t.virtImgLabel : t.realImgLabel, x, topY + (height >= 0 ? -12 : 20));
     }
 
-    // Draw 3 Principal Rays with Colorblind Palette & Animation
     function drawRays(objX, objY, imgX, imgY, isVirtual) {
       const fPx = FOCAL_LENGTH * SCALE;
       const fFront = lensX - fPx;
@@ -1347,7 +1350,6 @@
       const r2 = document.getElementById('ray2-check').checked;
       const r3 = document.getElementById('ray3-check').checked;
 
-      // Colorblind Palette Matching UI
       const c1 = '#d95f02'; // Rule 1: Vermilion / Orange
       const c2 = '#0072b2'; // Rule 2: Deep Sky Blue
       const c3 = '#cc79a7'; // Rule 3: Magenta
@@ -1372,7 +1374,7 @@
         ctx.setLineDash([]);
       }
 
-      // RULE 1: Parallel to Principal Axis -> Refracts through back focus f
+      // Rule 1
       if (r1) {
         drawSeg(objX, objY, lensX, objY, c1, phase1);
 
@@ -1392,7 +1394,7 @@
         }
       }
 
-      // RULE 2: Passes through Optical Center -> Undeviated
+      // Rule 2
       if (r2) {
         const slope = (axisY - objY) / (lensX - objX);
         const forwardY = axisY + slope * (canvasWidth - lensX);
@@ -1405,7 +1407,7 @@
         }
       }
 
-      // RULE 3: Passes through / towards Focal Point -> Refracts parallel
+      // Rule 3
       if (r3) {
         if (!isVirtual) {
           const slope = (axisY - objY) / (fFront - objX);
@@ -1427,7 +1429,6 @@
       }
     }
 
-    // Parallel Incident Rays from Infinity
     function drawParallelRaysFromInfinity() {
       const fPx = FOCAL_LENGTH * SCALE;
       const fBack = lensX + fPx;
@@ -1458,7 +1459,6 @@
       });
     }
 
-    // Object at Focus (u = f) -> Refracted Rays are Parallel
     function drawParallelRefractedRays(objX, objY) {
       const phase1 = Math.min(1.0, animProgress * 2.0);
       const phase2 = Math.max(0.0, (animProgress - 0.5) * 2.0);
@@ -1466,7 +1466,6 @@
       const fPx = FOCAL_LENGTH * SCALE;
       const fBack = lensX + fPx;
 
-      // Rule 1
       ctx.strokeStyle = '#d95f02';
       ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.moveTo(objX, objY); ctx.lineTo(objX + (lensX - objX) * phase1, objY); ctx.stroke();
@@ -1477,7 +1476,6 @@
         ctx.beginPath(); ctx.moveTo(lensX, objY); ctx.lineTo(lensX + (canvasWidth - lensX) * phase2, objY + (endY - objY) * phase2); ctx.stroke();
       }
 
-      // Rule 2
       ctx.strokeStyle = '#0072b2';
       ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.moveTo(objX, objY); ctx.lineTo(objX + (lensX - objX) * phase1, objY + (axisY - objY) * phase1); ctx.stroke();
@@ -1489,7 +1487,6 @@
       }
     }
 
-    // Interactive Dragging & Touch Events
     function initDragEvents() {
       let isDragging = false;
 
@@ -1498,8 +1495,8 @@
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         return {
-          x: clientX - rect.left,
-          y: clientY - rect.top
+          x: (clientX - rect.left) * (canvasWidth / rect.width),
+          y: (clientY - rect.top) * (canvasHeight / rect.height)
         };
       }
 
@@ -1524,18 +1521,15 @@
 
         const coords = getCanvasCoords(e);
 
-        // Horizontal Distance Snap (u)
         let rawU = (lensX - coords.x) / SCALE;
         rawU = Math.max(1.0, Math.min(12.5, rawU));
 
-        // Magnetic lock at f (5.0) and 2f (10.0), else 0.5cm snapping
         if (Math.abs(rawU - 5.0) < 0.35) rawU = 5.0;
         else if (Math.abs(rawU - 10.0) < 0.35) rawU = 10.0;
         else rawU = Math.round(rawU * 2) / 2;
 
         objU = rawU;
 
-        // Vertical Level Snap (5 Fixed levels)
         const relativeY = axisY - coords.y;
         if (relativeY > H_SPREAD * 0.75) objYLevel = 0;
         else if (relativeY > H_SPREAD * 0.25) objYLevel = 1;
@@ -1543,7 +1537,6 @@
         else if (relativeY > -H_SPREAD * 0.75) objYLevel = 3;
         else objYLevel = 4;
 
-        // Highlight preset button if exact match
         document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
         if (objU === 12) document.getElementById('p-12').classList.add('active');
         else if (objU === 10) document.getElementById('p-10').classList.add('active');
