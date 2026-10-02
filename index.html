@@ -636,7 +636,7 @@
       <div class="card" style="padding: 10px;">
         <div class="canvas-wrapper">
           <canvas id="opticsCanvas" height="380"></canvas>
-          <div class="canvas-locked-hint" id="lock-hint">🔒 Locked during Play (Press Reset to Edit)</div>
+          <div class="canvas-locked-hint" id="lock-hint">🔒 Locked during Play (Press Reset to edit)</div>
         </div>
       </div>
 
@@ -887,6 +887,17 @@
         formulaTitle: "Lens Formula & Calculation",
         lblEqTitle: "Lens Formula:",
         virtualNoteText: "ℹ️ Negative image distance v indicates a Virtual Image formed on the same side as the object.",
+        canvas: {
+          object: "Object",
+          realImage: "Real Image",
+          virtualImage: "Virtual Image",
+          pointImage: "Point Image",
+          parallelRays: "⚡ Incoming Parallel Rays (u = ∞)"
+        },
+        formula: {
+          realImageTag: "Real Image",
+          virtualImageTag: "Virtual Image"
+        },
         apps: {
           telescope: "Astronomical Telescope Objective",
           camera: "Camera / Human Eye",
@@ -936,6 +947,17 @@
         formulaTitle: "透鏡公式與實時計算",
         lblEqTitle: "透鏡公式：",
         virtualNoteText: "ℹ️ 負像距 v 代表折射光線發散，延伸交點形成同側虛像。",
+        canvas: {
+          object: "物體",
+          realImage: "實像",
+          virtualImage: "虛像",
+          pointImage: "點像",
+          parallelRays: "⚡ 入射平行光束 (u = ∞)"
+        },
+        formula: {
+          realImageTag: "實像",
+          virtualImageTag: "虛像"
+        },
         apps: {
           telescope: "天文望遠鏡物鏡",
           camera: "照相機 / 人眼",
@@ -1179,6 +1201,9 @@
         const mLine = document.getElementById('calc-m-line');
         const vNote = document.getElementById('virtual-explain-note');
 
+        const realTag = t.formula.realImageTag;
+        const virtualTag = t.formula.virtualImageTag;
+
         if (objU === 'inf') {
           appVal.innerText = t.apps.telescope;
           subLine.innerHTML = `${makeFracHTML('1', '5.0')} = ${makeFracHTML('1', '∞')} + ${makeFracHTML('1', 'v')} &nbsp;⇒&nbsp; ${makeFracHTML('1', 'v')} = ${makeFracHTML('1', '5.0')}`;
@@ -1198,7 +1223,7 @@
           else appVal.innerText = t.apps.magnifier;
 
           subLine.innerHTML = `${makeFracHTML('1', '5.0')} = ${makeFracHTML('1', objU.toFixed(1))} + ${makeFracHTML('1', 'v')}`;
-          vLine.innerHTML = `<strong>v = ${phys.v > 0 ? '+' : ''}${phys.v.toFixed(2)} cm</strong> (${phys.v > 0 ? 'Real Image' : 'Virtual Image'})`;
+          vLine.innerHTML = `<strong>v = ${phys.v > 0 ? '+' : ''}${phys.v.toFixed(2)} cm</strong> (${phys.v > 0 ? realTag : virtualTag})`;
           mLine.innerHTML = `<strong>m = |${makeFracHTML('v', 'u')}| = ${phys.m.toFixed(2)}×</strong>`;
 
           vNote.style.display = phys.v < 0 ? 'block' : 'none';
@@ -1440,6 +1465,7 @@
     }
 
     function drawBulbObject(x, baseY, height, glowing) {
+      const t = I18N[currentLang];
       const topY = baseY - height;
 
       ctx.strokeStyle = '#0f172a';
@@ -1458,14 +1484,15 @@
       ctx.font = 'bold 12px sans-serif';
       ctx.fillStyle = '#0f172a';
       ctx.textAlign = 'center';
-      ctx.fillText('Object', x, baseY + (height >= 0 ? 18 : -10));
+      ctx.fillText(t.canvas.object, x, baseY + (height >= 0 ? 18 : -10));
     }
 
     function drawInfinityObject() {
+      const t = I18N[currentLang];
       ctx.fillStyle = '#1e293b';
       ctx.font = 'bold 13px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText('⚡ Incoming Parallel Rays (u = ∞)', 12, 28);
+      ctx.fillText(t.canvas.parallelRays, 12, 28);
 
       ctx.strokeStyle = '#94a3b8';
       ctx.setLineDash([4, 4]);
@@ -1476,11 +1503,13 @@
     }
 
     function drawFormedImage(x, baseY, height, isPoint, isVirtual) {
+      const t = I18N[currentLang];
+
       if (isPoint) {
         ctx.fillStyle = '#16a34a';
         ctx.beginPath(); ctx.arc(x, baseY, 6, 0, Math.PI * 2); ctx.fill();
         ctx.font = 'bold 12px sans-serif';
-        ctx.fillText('Point Image', x, baseY - 12);
+        ctx.fillText(t.canvas.pointImage, x, baseY - 12);
         return;
       }
 
@@ -1500,10 +1529,21 @@
 
       ctx.restore();
 
+      // Label Positioning & Edge Safety Guard
+      let labelY = topY + (height >= 0 ? -12 : 20);
+      
+      // Top canvas boundary safety check (ensure text doesn't clip off top edge)
+      if (labelY < 18) {
+        labelY = topY + 22; // Render below arrow tip if tip is too close to top border
+      }
+      if (labelY > canvasHeight - 12) {
+        labelY = topY - 12; // Bottom safety check
+      }
+
       ctx.font = 'bold 12px sans-serif';
       ctx.fillStyle = isVirtual ? '#1d4ed8' : '#15803d';
       ctx.textAlign = 'center';
-      ctx.fillText(isVirtual ? 'Virtual Image' : 'Real Image', x, topY + (height >= 0 ? -12 : 20));
+      ctx.fillText(isVirtual ? t.canvas.virtualImage : t.canvas.realImage, x, labelY);
     }
 
     function drawRays(objX, objY, imgX, imgY, isVirtual) {
