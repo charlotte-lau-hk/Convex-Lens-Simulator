@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HKDSE 凸透鏡光學模擬器 | Convex Lens Optics Simulator</title>
+  <style>
+    :root {
+      --bg-primary: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-card: #f1f5f9;
+      --border-color: #cbd5e1;
+      --border-focus: #2563eb;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning-bg: #fef2f2;
+      --warning-border: #fca5a5;
+      --ray-1: #dc2626; /* Parallel ray - Red */
+      --ray-2: #16a34a; /* Central ray - Green */
+      --ray-3: #2563eb; /* Focal ray - Blue */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Portrait warning for mobile */
+    #portrait-warning {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.95);
+      color: #ffffff;
+      z-index: 9999;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #portrait-warning svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      fill: #f59e0b;
+    }
+
+    @media screen and (orientation: portrait) and (max-width: 768px) {
+      #portrait-warning {
+        display: flex;
+      }
+    }
+
+    /* Header */
+    header {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .title-area h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .title-area p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .lang-btn {
+      background: #e2e8f0;
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.2s;
+    }
+
+    .lang-btn:hover {
+      background: #cbd5e1;
+    }
+
+    /* Steps Flow Overlay Bar */
+    .steps-bar {
+      background: #eff6ff;
+      border-bottom: 1px solid #bfdbfe;
+      padding: 8px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #1e40af;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .step-num {
+      background: var(--primary);
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    /* Main Layout */
+    .app-container {
+      display: flex;
+      flex: 1;
+      gap: 16px;
+      padding: 16px;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Left Column: Canvas Area (approx 68%) */
+    .canvas-column {
+      flex: 68;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .canvas-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .canvas-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .canvas-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      cursor: grab;
+    }
+
+    canvas:active {
+      cursor: grabbing;
+    }
+
+    /* Preset & Controls Bar */
+    .preset-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      background: var(--bg-surface);
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+
+    .preset-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-right: 4px;
+    }
+
+    .preset-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.15s;
+    }
+
+    .preset-btn:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+    }
+
+    .preset-btn.active {
+      background: #dbeafe;
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Ray Toggles */
+    .ray-toggles {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      background: var(--bg-surface);
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+
+    .toggle-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .toggle-group input {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+    }
+
+    .color-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Right Column: Quiz & Data Panel (approx 32%) */
+    .panel-column {
+      flex: 32;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 320px;
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Data Display Grid */
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .data-box {
+      background: var(--bg-card);
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .data-box.full {
+      grid-column: span 2;
+    }
+
+    .data-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .data-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Quiz Panel Styling */
+    .quiz-item {
+      margin-bottom: 12px;
+      padding: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .quiz-item.unanswered-error {
+      border-color: var(--danger);
+      background: var(--warning-bg);
+    }
+
+    .quiz-q {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .opt-btn {
+      flex: 1;
+      min-width: 30%;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      padding: 5px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      color: var(--text-main);
+      transition: all 0.15s;
+    }
+
+    .opt-btn:hover {
+      background: #f1f5f9;
+    }
+
+    .opt-btn.selected {
+      background: #dbeafe;
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .quiz-result-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .quiz-result-badge.correct {
+      display: inline-block;
+      background: #dcfce7;
+      color: var(--success);
+    }
+
+    .quiz-result-badge.incorrect {
+      display: inline-block;
+      background: #fee2e2;
+      color: var(--danger);
+    }
+
+    .correct-ans-note {
+      font-size: 0.75rem;
+      color: var(--danger);
+      font-weight: 700;
+      margin-top: 4px;
+      display: none;
+    }
+
+    /* Warning Banner */
+    .alert-banner {
+      display: none;
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      color: var(--danger);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Control Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-play {
+      background: var(--success);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-play:hover {
+      background: #15803d;
+    }
+
+    .btn-reset {
+      background: #64748b;
+      color: white;
+    }
+
+    .btn-reset:hover {
+      background: #475569;
+    }
+
+    /* Disabled state overlay for object dragging */
+    .canvas-locked-hint {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(15, 23, 42, 0.75);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: none;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile Portrait Warning -->
+  <div id="portrait-warning">
+    <svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+    <h2 id="port-title">請將裝置轉為橫向</h2>
+    <p id="port-desc" style="margin-top: 8px; font-size: 0.9rem; color: #cbd5e1;">以獲得最佳 HKDSE 光學模擬操作體驗</p>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="title-area">
+      <h1 id="app-title">HKDSE 凸透鏡成像模擬器</h1>
+      <p id="app-subtitle">Convex Lens Optics Simulator & Interactive Quiz</p>
+    </div>
+    <div class="header-controls">
+      <button class="lang-btn" id="lang-toggle-btn" onclick="toggleLanguage()">English</button>
+    </div>
+  </header>
+
+  <!-- Step Guide Overlay Bar -->
+  <div class="steps-bar">
+    <div class="step-item"><span class="step-num">1</span> <span id="st-1">移動燈泡物件 (Drag Object)</span></div>
+    <div>➔</div>
+    <div class="step-item"><span class="step-num">2</span> <span id="st-2">回答特徵預測 (Answer Quiz)</span></div>
+    <div>➔</div>
+    <div class="step-item"><span class="step-num">3</span> <span id="st-3">按 Play 觸發折射與驗證 (Press Play)</span></div>
+  </div>
+
+  <!-- Main Application Container -->
+  <div class="app-container">
+
+    <!-- Left Column: Canvas & Direct Controls -->
+    <div class="canvas-column">
+      <div class="canvas-card">
+        <div class="canvas-header">
+          <span class="canvas-title" id="canvas-heading">光學畫布 (Optical Canvas) - 焦距 f = 5.0 cm</span>
+          <span style="font-size:0.75rem; color:var(--text-muted);" id="snap-hint">Snap 磁吸: 0.5cm 網格 (f, 2f 精確吸附)</span>
+        </div>
+        <div class="canvas-wrapper">
+          <canvas id="opticsCanvas" width="900" height="380"></canvas>
+          <div class="canvas-locked-hint" id="lock-hint">🔒 播放中 (已鎖定物件 / Pressed Reset to Edit)</div>
+        </div>
+      </div>
+
+      <!-- Presets Bar -->
+      <div class="preset-bar">
+        <span class="preset-label" id="preset-lbl">物距快捷位置 (Presets):</span>
+        <button class="preset-btn" onclick="setPreset('inf')" id="p-inf">u = ∞ (無限遠)</button>
+        <button class="preset-btn" onclick="setPreset(12)" id="p-12">u &gt; 2f (12.0 cm)</button>
+        <button class="preset-btn" onclick="setPreset(10)" id="p-10">u = 2f (10.0 cm)</button>
+        <button class="preset-btn" onclick="setPreset(7.5)" id="p-75">f &lt; u &lt; 2f (7.5 cm)</button>
+        <button class="preset-btn" onclick="setPreset(5)" id="p-50">u = f (5.0 cm)</button>
+        <button class="preset-btn" onclick="setPreset(3)" id="p-30">u &lt; f (3.0 cm)</button>
+      </div>
+
+      <!-- Ray Rules Toggle Switches -->
+      <div class="ray-toggles">
+        <label class="toggle-group">
+          <input type="checkbox" id="ray1-check" checked onchange="draw()">
+          <span class="color-dot" style="background:var(--ray-1);"></span>
+          <span id="r1-lbl">Rule 1: 平行主軸光線 (Parallel Ray)</span>
+        </label>
+        <label class="toggle-group">
+          <input type="checkbox" id="ray2-check" checked onchange="draw()">
+          <span class="color-dot" style="background:var(--ray-2);"></span>
+          <span id="r2-lbl">Rule 2: 過透鏡中心光線 (Central Ray)</span>
+        </label>
+        <label class="toggle-group">
+          <input type="checkbox" id="ray3-check" checked onchange="draw()">
+          <span class="color-dot" style="background:var(--ray-3);"></span>
+          <span id="r3-lbl">Rule 3: 過焦點光線 (Focal Ray)</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Right Column: Quiz & Experimental Data Panel -->
+    <div class="panel-column">
+
+      <!-- Quiz Panel -->
+      <div class="card">
+        <div class="card-title">
+          <span id="quiz-title">像的 4 大特徵預測 (Quiz)</span>
+          <span style="font-size:0.75rem; font-weight:normal; color:var(--text-muted);" id="quiz-subtitle">按 Play 前必須全答</span>
+        </div>
+
+        <div class="alert-banner" id="quiz-warning-alert">
+          ⚠️ <span id="alert-msg">請先回答所有 4 個特徵題目！</span>
+        </div>
+
+        <!-- Q1: Magnification -->
+        <div class="quiz-item" id="qitem-mag">
+          <div class="quiz-q">
+            <span id="q1-txt">1. 放大率 (Magnification):</span>
+            <span class="quiz-result-badge" id="badge-mag"></span>
+          </div>
+          <div class="quiz-options">
+            <button class="opt-btn" onclick="selectOpt('mag', 'magnified')" id="opt-mag-1">放大 (Magnified)</button>
+            <button class="opt-btn" onclick="selectOpt('mag', 'diminished')" id="opt-mag-2">縮小 (Diminished)</button>
+            <button class="opt-btn" onclick="selectOpt('mag', 'same')" id="opt-mag-3">等大 (Same size)</button>
+          </div>
+          <div class="correct-ans-note" id="note-mag"></div>
+        </div>
+
+        <!-- Q2: Orientation -->
+        <div class="quiz-item" id="qitem-ori">
+          <div class="quiz-q">
+            <span id="q2-txt">2. 方向 (Orientation):</span>
+            <span class="quiz-result-badge" id="badge-ori"></span>
+          </div>
+          <div class="quiz-options">
+            <button class="opt-btn" onclick="selectOpt('ori', 'erect')" id="opt-ori-1">正立 (Erect)</button>
+            <button class="opt-btn" onclick="selectOpt('ori', 'inverted')" id="opt-ori-2">倒立 (Inverted)</button>
+          </div>
+          <div class="correct-ans-note" id="note-ori"></div>
+        </div>
+
+        <!-- Q3: Nature -->
+        <div class="quiz-item" id="qitem-nat">
+          <div class="quiz-q">
+            <span id="q3-txt">3. 性質 (Nature):</span>
+            <span class="quiz-result-badge" id="badge-nat"></span>
+          </div>
+          <div class="quiz-options">
+            <button class="opt-btn" onclick="selectOpt('nat', 'real')" id="opt-nat-1">實像 (Real)</button>
+            <button class="opt-btn" onclick="selectOpt('nat', 'virtual')" id="opt-nat-2">虛像 (Virtual)</button>
+          </div>
+          <div class="correct-ans-note" id="note-nat"></div>
+        </div>
+
+        <!-- Q4: Position -->
+        <div class="quiz-item" id="qitem-pos">
+          <div class="quiz-q">
+            <span id="q4-txt">4. 像的位置 (Image Position):</span>
+            <span class="quiz-result-badge" id="badge-pos"></span>
+          </div>
+          <div class="quiz-options">
+            <button class="opt-btn" onclick="selectOpt('pos', 'behind_lens')" id="opt-pos-1">鏡後/同側 (Behind lens)</button>
+            <button class="opt-btn" onclick="selectOpt('pos', 'at_f')" id="opt-pos-2">在 f (At f)</button>
+            <button class="opt-btn" onclick="selectOpt('pos', 'between_f_2f')" id="opt-pos-3">f 與 2f 之間</button>
+            <button class="opt-btn" onclick="selectOpt('pos', 'at_2f')" id="opt-pos-4">在 2f (At 2f)</button>
+            <button class="opt-btn" onclick="selectOpt('pos', 'beyond_2f')" id="opt-pos-5">2f 外 (Beyond 2f)</button>
+            <button class="opt-btn" onclick="selectOpt('pos', 'infinity')" id="opt-pos-6">無限遠 (At infinity)</button>
+          </div>
+          <div class="correct-ans-note" id="note-pos"></div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button class="btn btn-play" onclick="handlePlay()" id="btn-play-lbl">▶ 按此驗證 (Play)</button>
+          <button class="btn btn-reset" onclick="handleReset()" id="btn-reset-lbl">🔄 重置 (Reset)</button>
+        </div>
+      </div>
+
+      <!-- Live Data Display -->
+      <div class="card">
+        <div class="card-title" id="data-title">光學數據 (Data Display)</div>
+        <div class="data-grid">
+          <div class="data-box">
+            <div class="data-label" id="lbl-u">物距 (Object dist. u)</div>
+            <div class="data-value" id="val-u">12.0 cm</div>
+          </div>
+          <div class="data-box">
+            <div class="data-label" id="lbl-v">像距 (Image dist. v)</div>
+            <div class="data-value" id="val-v">--</div>
+          </div>
+          <div class="data-box full">
+            <div class="data-label" id="lbl-m">線性放大率 (Magnification m)</div>
+            <div class="data-value" id="val-m">--</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // GLOBAL STATE & HKDSE CONSTANTS
+    // ==========================================
+    const FOCAL_LENGTH = 5.0; // cm
+    const SCALE = 32; // pixels per cm
+    
+    let currentLang = 'tc'; // 'tc' or 'en'
+    let isPlaying = false;
+    let animProgress = 1.0; // 0.0 to 1.0 for ray propagation animation
+    let animReqId = null;
+
+    // State Variables
+    let objU = 12.0; // cm, 'inf' for infinity
+    let objYLevel = 2; // 0: top, 1: upper-mid, 2: center, 3: lower-mid, 4: bottom
+    const yLevelsCount = 5;
+
+    let quizAnswers = {
+      mag: null,
+      ori: null,
+      nat: null,
+      pos: null
+    };
+
+    // DOM Elements
+    const canvas = document.getElementById('opticsCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Canvas Constants
+    let canvasWidth, canvasHeight, lensX, axisY;
+
+    // Bilingual Text Dictionary
+    const I18N = {
+      tc: {
+        appTitle: "HKDSE 凸透鏡成像模擬器",
+        appSubtitle: "Convex Lens Optics Simulator & Interactive Quiz",
+        portTitle: "請將裝置轉為橫向",
+        portDesc: "以獲得最佳 HKDSE 光學模擬操作體驗",
+        st1: "移動燈泡物件 (Drag Object)",
+        st2: "回答特徵預測 (Answer Quiz)",
+        st3: "按 Play 觸發折射與驗證 (Press Play)",
+        canvasHead: "光學畫布 (Optical Canvas) - 焦距 f = 5.0 cm",
+        snapHint: "Snap 磁吸: 0.5cm 網格 (f, 2f 精確吸附)",
+        lockHint: "🔒 播放中 (按下 Reset 才能調整物件)",
+        presetLbl: "物距快捷位置 (Presets):",
+        r1: "Rule 1: 平行主軸光線 (Parallel Ray)",
+        r2: "Rule 2: 過透鏡中心光線 (Central Ray)",
+        r3: "Rule 3: 過焦點光線 (Focal Ray)",
+        quizTitle: "像的 4 大特徵預測 (Quiz)",
+        quizSub: "按 Play 前必須全答",
+        alertMsg: "請先回答所有 4 個特徵題目！",
+        q1: "1. 放大率 (Magnification):",
+        optMag1: "放大 (Magnified)", optMag2: "縮小 (Diminished)", optMag3: "等大 (Same size)",
+        q2: "2. 方向 (Orientation):",
+        optOri1: "正立 (Erect)", optOri2: "倒立 (Inverted)",
+        q3: "3. 性質 (Nature):",
+        optNat1: "實像 (Real)", optNat2: "虛像 (Virtual)",
+        q4: "4. 像的位置 (Image Position):",
+        optPos1: "鏡前/同側 (Same side as object)", optPos2: "在 f (At f)", optPos3: "f 與 2f 之間", optPos4: "在 2f (At 2f)", optPos5: "2f 外 (Beyond 2f)", optPos6: "無限遠 (At infinity)",
+        playBtn: "▶ 按此驗證 (Play)",
+        resetBtn: "🔄 重置 (Reset)",
+        dataTitle: "光學數據 (Data Display)",
+        lblU: "物距 (Object dist. u)",
+        lblV: "像距 (Image dist. v)",
+        lblM: "線性放大率 (Magnification m)",
+        outsideCanvas: "超出畫布邊界",
+        atInfinity: "無限遠 (infinity)",
+        correct: "正確 Correct",
+        incorrect: "錯誤 Incorrect",
+        correctAnsPrefix: "正確答案："
+      },
+      en: {
+        appTitle: "HKDSE Convex Lens Optics Simulator",
+        appSubtitle: "Convex Lens Optics Simulator & Interactive Quiz",
+        portTitle: "Please rotate your device",
+        portDesc: "For the best HKDSE Optics simulation experience",
+        st1: "1. Move Object",
+        st2: "2. Answer Quiz",
+        st3: "3. Press Play to Verify",
+        canvasHead: "Optical Canvas - Focal Length f = 5.0 cm",
+        snapHint: "Snap: 0.5cm grid (Auto-snap at f & 2f)",
+        lockHint: "🔒 Locked during Play (Press Reset to edit)",
+        presetLbl: "Object Distance Presets:",
+        r1: "Rule 1: Parallel Ray",
+        r2: "Rule 2: Central Ray",
+        r3: "Rule 3: Focal Ray",
+        quizTitle: "Predict Image Characteristics",
+        quizSub: "Must answer all before Play",
+        alertMsg: "Please answer all 4 quiz questions first!",
+        q1: "1. Magnification:",
+        optMag1: "Magnified", optMag2: "Diminished", optMag3: "Same size",
+        q2: "2. Orientation:",
+        optOri1: "Erect", optOri2: "Inverted",
+        q3: "3. Nature:",
+        optNat1: "Real", optNat2: "Virtual",
+        q4: "4. Image Position:",
+        optPos1: "Same side as object", optPos2: "At f", optPos3: "Between f & 2f", optPos4: "At 2f", optPos5: "Beyond 2f", optPos6: "At infinity",
+        playBtn: "▶ Play & Verify",
+        resetBtn: "🔄 Reset",
+        dataTitle: "Data Display",
+        lblU: "Object distance u",
+        lblV: "Image distance v",
+        lblM: "Magnification m",
+        outsideCanvas: "Outside canvas",
+        atInfinity: "At infinity",
+        correct: "Correct",
+        incorrect: "Incorrect",
+        correctAnsPrefix: "Correct answer: "
+      }
+    };
+
+    // Setup Canvas Resolution with DevicePixelRatio for Sharp Rendering
+    function setupCanvas() {
+      const wrapper = document.querySelector('.canvas-wrapper');
+      const rect = wrapper.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      canvasWidth = rect.width;
+      canvasHeight = 360; // crisp fixed height layout
+
+      canvas.width = canvasWidth * dpr;
+      canvas.height = canvasHeight * dpr;
+      canvas.style.width = `${canvasWidth}px`;
+      canvas.style.height = `${canvasHeight}px`;
+
+      ctx.scale(dpr, dpr);
+
+      lensX = canvasWidth * 0.55; // Lens positioned slightly to right to give object dragging space
+      axisY = canvasHeight * 0.5;
+    }
+
+    // Initialize Page
+    window.addEventListener('DOMContentLoaded', () => {
+      setupCanvas();
+      window.addEventListener('resize', () => {
+        setupCanvas();
+        draw();
+      });
+      initDragEvents();
+      updateLanguage();
+      draw();
+    });
+
+    // ==========================================
+    // LANGUAGE TOGGLE & TRANSLATION
+    // ==========================================
+    function toggleLanguage() {
+      currentLang = currentLang === 'tc' ? 'en' : 'tc';
+      document.getElementById('lang-toggle-btn').innerText = currentLang === 'tc' ? 'English' : '繁體中文';
+      updateLanguage();
+      draw();
+    }
+
+    function updateLanguage() {
+      const t = I18N[currentLang];
+      document.getElementById('app-title').innerText = t.appTitle;
+      document.getElementById('app-subtitle').innerText = t.appSubtitle;
+      document.getElementById('port-title').innerText = t.portTitle;
+      document.getElementById('port-desc').innerText = t.portDesc;
+
+      document.getElementById('st-1').innerText = t.st1;
+      document.getElementById('st-2').innerText = t.st2;
+      document.getElementById('st-3').innerText = t.st3;
+
+      document.getElementById('canvas-heading').innerText = t.canvasHead;
+      document.getElementById('snap-hint').innerText = t.snapHint;
+      document.getElementById('lock-hint').innerText = t.lockHint;
+
+      document.getElementById('preset-lbl').innerText = t.presetLbl;
+      document.getElementById('r1-lbl').innerText = t.r1;
+      document.getElementById('r2-lbl').innerText = t.r2;
+      document.getElementById('r3-lbl').innerText = t.r3;
+
+      document.getElementById('quiz-title').innerText = t.quizTitle;
+      document.getElementById('quiz-subtitle').innerText = t.quizSub;
+      document.getElementById('alert-msg').innerText = t.alertMsg;
+
+      document.getElementById('q1-txt').innerText = t.q1;
+      document.getElementById('opt-mag-1').innerText = t.optMag1;
+      document.getElementById('opt-mag-2').innerText = t.optMag2;
+      document.getElementById('opt-mag-3').innerText = t.optMag3;
+
+      document.getElementById('q2-txt').innerText = t.q2;
+      document.getElementById('opt-ori-1').innerText = t.optOri1;
+      document.getElementById('opt-ori-2').innerText = t.optOri2;
+
+      document.getElementById('q3-txt').innerText = t.q3;
+      document.getElementById('opt-nat-1').innerText = t.optNat1;
+      document.getElementById('opt-nat-2').innerText = t.optNat2;
+
+      document.getElementById('q4-txt').innerText = t.q4;
+      document.getElementById('opt-pos-1').innerText = t.optPos1;
+      document.getElementById('opt-pos-2').innerText = t.optPos2;
+      document.getElementById('opt-pos-3').innerText = t.optPos3;
+      document.getElementById('opt-pos-4').innerText = t.optPos4;
+      document.getElementById('opt-pos-5').innerText = t.optPos5;
+      document.getElementById('opt-pos-6').innerText = t.optPos6;
+
+      document.getElementById('btn-play-lbl').innerText = t.playBtn;
+      document.getElementById('btn-reset-lbl').innerText = t.resetBtn;
+
+      document.getElementById('data-title').innerText = t.dataTitle;
+      document.getElementById('lbl-u').innerText = t.lblU;
+      document.getElementById('lbl-v').innerText = t.lblV;
+      document.getElementById('lbl-m').innerText = t.lblM;
+
+      updateDataDisplay();
+    }
+
+    // ==========================================
+    // PRESETS & SELECTIONS
+    // ==========================================
+    function setPreset(val) {
+      if (isPlaying) return; // Locked during Play
+
+      objU = val;
+      // Highlight preset button
+      document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+      if (val === 'inf') document.getElementById('p-inf').classList.add('active');
+      else if (val === 12) document.getElementById('p-12').classList.add('active');
+      else if (val === 10) document.getElementById('p-10').classList.add('active');
+      else if (val === 7.5) document.getElementById('p-75').classList.add('active');
+      else if (val === 5) document.getElementById('p-50').classList.add('active');
+      else if (val === 3) document.getElementById('p-30').classList.add('active');
+
+      updateDataDisplay();
+      draw();
+    }
+
+    function selectOpt(category, value) {
+      if (isPlaying) return; // Locked during play
+
+      quizAnswers[category] = value;
+
+      // Clear alert highlights if user answers
+      document.getElementById(`qitem-${category}`).classList.remove('unanswered-error');
+      document.getElementById('quiz-warning-alert').style.display = 'none';
+
+      // Update button selection state
+      const item = document.getElementById(`qitem-${category}`);
+      item.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
+      
+      const targetMap = {
+        mag: { magnified: 'opt-mag-1', diminished: 'opt-mag-2', same: 'opt-mag-3' },
+        ori: { erect: 'opt-ori-1', inverted: 'opt-ori-2' },
+        nat: { real: 'opt-nat-1', virtual: 'opt-nat-2' },
+        pos: { behind_lens: 'opt-pos-1', at_f: 'opt-pos-2', between_f_2f: 'opt-pos-3', at_2f: 'opt-pos-4', beyond_2f: 'opt-pos-5', infinity: 'opt-pos-6' }
+      };
+
+      if (targetMap[category][value]) {
+        document.getElementById(targetMap[category][value]).classList.add('selected');
+      }
+    }
+
+    // Calculate Exact Physical Physics Values
+    function calcPhysics() {
+      if (objU === 'inf') {
+        return { v: FOCAL_LENGTH, m: 0, isInf: false, isParallel: true };
+      }
+      if (Math.abs(objU - FOCAL_LENGTH) < 0.001) {
+        return { v: Infinity, m: Infinity, isInf: true, isParallel: false };
+      }
+
+      const v = (objU * FOCAL_LENGTH) / (objU - FOCAL_LENGTH);
+      const m = Math.abs(v / objU);
+      return { v, m, isInf: false, isParallel: false };
+    }
+
+    function updateDataDisplay() {
+      const t = I18N[currentLang];
+      const valU = document.getElementById('val-u');
+      const valV = document.getElementById('val-v');
+      const valM = document.getElementById('val-m');
+
+      if (objU === 'inf') {
+        valU.innerText = "∞ (無限遠 / Infinity)";
+      } else {
+        valU.innerText = `${objU.toFixed(1)} cm`;
+      }
+
+      if (!isPlaying) {
+        valV.innerText = "--";
+        valM.innerText = "--";
+        return;
+      }
+
+      const phys = calcPhysics();
+
+      if (phys.isInf) {
+        valV.innerText = t.atInfinity;
+        valM.innerText = "∞";
+      } else {
+        const vPx = phys.v * SCALE;
+        const isOutside = (lensX + vPx > canvasWidth) || (lensX + vPx < 0);
+        
+        valV.innerText = `${phys.v.toFixed(1)} cm ${isOutside ? `(${t.outsideCanvas})` : ''}`;
+        valM.innerText = phys.m === 0 ? "0 (Point)" : `${phys.m.toFixed(2)}x`;
+      }
+    }
+
+    // ==========================================
+    // PLAY & RESET FLOW LOGIC
+    // ==========================================
+    function handlePlay() {
+      if (isPlaying) return;
+
+      // 1. Validate if all 4 quiz questions are answered
+      const unans = [];
+      if (!quizAnswers.mag) unans.push('mag');
+      if (!quizAnswers.ori) unans.push('ori');
+      if (!quizAnswers.nat) unans.push('nat');
+      if (!quizAnswers.pos) unans.push('pos');
+
+      if (unans.length > 0) {
+        // Show Warning
+        document.getElementById('quiz-warning-alert').style.display = 'flex';
+        unans.forEach(cat => {
+          document.getElementById(`qitem-${cat}`).classList.add('unanswered-error');
+        });
+        return;
+      }
+
+      // Hide alert
+      document.getElementById('quiz-warning-alert').style.display = 'none';
+
+      // Lock UI State
+      isPlaying = true;
+      document.getElementById('lock-hint').style.display = 'block';
+      document.querySelectorAll('.preset-btn').forEach(btn => btn.style.opacity = '0.5');
+
+      // Grade Quiz
+      gradeQuiz();
+      updateDataDisplay();
+
+      // Start Ray Animation
+      animProgress = 0.0;
+      if (animReqId) cancelAnimationFrame(animReqId);
+
+      const startTime = performance.now();
+      const duration = 1200; // ms
+
+      function animateRays(now) {
+        const elapsed = now - startTime;
+        animProgress = Math.min(1.0, elapsed / duration);
+        draw();
+
+        if (animProgress < 1.0) {
+          animReqId = requestAnimationFrame(animateRays);
+        }
+      }
+
+      animReqId = requestAnimationFrame(animateRays);
+    }
+
+    function handleReset() {
+      isPlaying = false;
+      animProgress = 1.0;
+      if (animReqId) cancelAnimationFrame(animReqId);
+
+      document.getElementById('lock-hint').style.display = 'none';
+      document.querySelectorAll('.preset-btn').forEach(btn => btn.style.opacity = '1');
+      document.getElementById('quiz-warning-alert').style.display = 'none';
+
+      // Clear Quiz & Badges
+      quizAnswers = { mag: null, ori: null, nat: null, pos: null };
+      ['mag', 'ori', 'nat', 'pos'].forEach(cat => {
+        const item = document.getElementById(`qitem-${cat}`);
+        item.classList.remove('unanswered-error');
+        item.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
+        
+        const badge = document.getElementById(`badge-${cat}`);
+        badge.style.display = 'none';
+        badge.className = 'quiz-result-badge';
+
+        const note = document.getElementById(`note-${cat}`);
+        note.style.display = 'none';
+      });
+
+      updateDataDisplay();
+      draw();
+    }
+
+    // Correct Answers Evaluator
+    function getCorrectAnswers() {
+      if (objU === 'inf') {
+        return { mag: 'diminished', ori: 'inverted', nat: 'real', pos: 'at_f' };
+      }
+      if (objU > 10.0) {
+        return { mag: 'diminished', ori: 'inverted', nat: 'real', pos: 'between_f_2f' };
+      }
+      if (Math.abs(objU - 10.0) < 0.001) {
+        return { mag: 'same', ori: 'inverted', nat: 'real', pos: 'at_2f' };
+      }
+      if (objU > 5.0 && objU < 10.0) {
+        return { mag: 'magnified', ori: 'inverted', nat: 'real', pos: 'beyond_2f' };
+      }
+      if (Math.abs(objU - 5.0) < 0.001) {
+        return { mag: 'magnified', ori: 'erect', nat: 'virtual', pos: 'infinity' };
+      }
+      if (objU < 5.0) {
+        return { mag: 'magnified', ori: 'erect', nat: 'virtual', pos: 'behind_lens' };
+      }
+    }
+
+    function gradeQuiz() {
+      const correct = getCorrectAnswers();
+      const t = I18N[currentLang];
+
+      const optionLabels = {
+        mag: { magnified: t.optMag1, diminished: t.optMag2, same: t.optMag3 },
+        ori: { erect: t.optOri1, inverted: t.optOri2 },
+        nat: { real: t.optNat1, virtual: t.optNat2 },
+        pos: { behind_lens: t.optPos1, at_f: t.optPos2, between_f_2f: t.optPos3, at_2f: t.optPos4, beyond_2f: t.optPos5, infinity: t.optPos6 }
+      };
+
+      ['mag', 'ori', 'nat', 'pos'].forEach(cat => {
+        const badge = document.getElementById(`badge-${cat}`);
+        const note = document.getElementById(`note-${cat}`);
+        const userAns = quizAnswers[cat];
+        const rightAns = correct[cat];
+
+        badge.style.display = 'inline-block';
+
+        if (userAns === rightAns) {
+          badge.innerText = `✓ ${t.correct}`;
+          badge.className = 'quiz-result-badge correct';
+          note.style.display = 'none';
+        } else {
+          badge.innerText = `✗ ${t.incorrect}`;
+          badge.className = 'quiz-result-badge incorrect';
+          note.innerText = `${t.correctAnsPrefix} ${optionLabels[cat][rightAns]}`;
+          note.style.display = 'block';
+        }
+      });
+    }
+
+    // ==========================================
+    // CANVAS DRAWING ENGINE (HIGH CONTRAST LIGHT THEME)
+    // ==========================================
+    function draw() {
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+      // 1. Draw Grid Lines
+      ctx.strokeStyle = '#f1f5f9';
+      ctx.lineWidth = 1;
+      const gridSize = 16; // 0.5cm grid
+      for (let x = 0; x < canvasWidth; x += gridSize) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvasHeight); ctx.stroke();
+      }
+      for (let y = 0; y < canvasHeight; y += gridSize) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvasWidth, y); ctx.stroke();
+      }
+
+      // 2. Principal Axis
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, axisY);
+      ctx.lineTo(canvasWidth, axisY);
+      ctx.stroke();
+
+      // 3. Focal Points & Labels (f = 5cm, 2f = 10cm - HKDSE Strict Standard)
+      const fPx = FOCAL_LENGTH * SCALE;
+      const focalPoints = [
+        { x: lensX - 2 * fPx, label: '2f' },
+        { x: lensX - fPx, label: 'f' },
+        { x: lensX + fPx, label: 'f' },
+        { x: lensX + 2 * fPx, label: '2f' }
+      ];
+
+      focalPoints.forEach(pt => {
+        if (pt.x >= 0 && pt.x <= canvasWidth) {
+          // Point Marker
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath();
+          ctx.arc(pt.x, axisY, 4, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Label Text
+          ctx.font = 'bold 13px sans-serif';
+          ctx.fillStyle = '#1e293b';
+          ctx.textAlign = 'center';
+          ctx.fillText(pt.label, pt.x, axisY + 22);
+        }
+      });
+
+      // 4. Convex Lens (Optical Canvas Center)
+      drawConvexLens();
+
+      // Object Coordinates
+      let objX, objY, objHeight;
+      const h0 = 45; // Base height px
+      const hOffsets = [h0, h0 * 0.5, 0, -h0 * 0.5, -h0];
+      objHeight = hOffsets[objYLevel];
+
+      if (objU === 'inf') {
+        // Render parallel incoming indicator at infinity
+        drawInfinityObject();
+      } else {
+        objX = lensX - objU * SCALE;
+        objY = axisY - objHeight;
+        drawBulbObject(objX, axisY, objHeight, isPlaying);
+      }
+
+      // 5. If Playing, Draw Light Rays & Formed Image with Animation
+      if (isPlaying) {
+        const phys = calcPhysics();
+
+        if (objU === 'inf') {
+          drawParallelRaysFromInfinity();
+          drawFormedImage(lensX + fPx, axisY, 0, true); // Point image at focal plane
+        } else if (phys.isInf) {
+          // u = f: Image at infinity
+          drawParallelRefractedRays(objX, objY);
+        } else {
+          // Standard Lens Formula
+          const imgX = lensX + phys.v * SCALE;
+          const imgHeight = -phys.v / objU * objHeight;
+          const imgY = axisY - imgHeight;
+
+          // Rays
+          drawRays(objX, objY, imgX, imgY, phys.v < 0);
+
+          // Render Image
+          if (animProgress >= 0.8) {
+            drawFormedImage(imgX, axisY, imgHeight, false, phys.v < 0);
+          }
+        }
+      }
+    }
+
+    // Draw Convex Lens with HKDSE Arrows symbol
+    function drawConvexLens() {
+      const lensHeight = canvasHeight * 0.85;
+      const lensTop = axisY - lensHeight / 2;
+      const lensBottom = axisY + lensHeight / 2;
+
+      // Lens Body (Subtle Blue Glass Gradient)
+      const grad = ctx.createLinearGradient(lensX - 12, 0, lensX + 12, 0);
+      grad.addColorStop(0, 'rgba(191, 219, 254, 0.4)');
+      grad.addColorStop(0.5, 'rgba(59, 130, 246, 0.6)');
+      grad.addColorStop(1, 'rgba(191, 219, 254, 0.4)');
+
+      ctx.beginPath();
+      ctx.moveTo(lensX, lensTop);
+      ctx.quadraticCurveTo(lensX + 16, axisY, lensX, lensBottom);
+      ctx.quadraticCurveTo(lensX - 16, axisY, lensX, lensTop);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Optical Axis Line inside Lens
+      ctx.strokeStyle = 'rgba(37, 99, 235, 0.4)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(lensX, 10);
+      ctx.lineTo(lensX, canvasHeight - 10);
+      ctx.stroke();
+      ctx.setLineDash([]); // Reset
+    }
+
+    // Draw Bulb Object
+    function drawBulbObject(x, baseY, height, glowing) {
+      const topY = baseY - height;
+
+      // Object Stem Line
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, baseY);
+      ctx.lineTo(x, topY);
+      ctx.stroke();
+
+      // Bulb Tip Indicator / Arrowhead
+      ctx.fillStyle = glowing ? '#f59e0b' : '#64748b';
+      ctx.beginPath();
+      ctx.arc(x, topY, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      if (glowing) {
+        // Glow Effect
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.3)';
+        ctx.beginPath();
+        ctx.arc(x, topY, 15, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Label
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillStyle = '#0f172a';
+      ctx.textAlign = 'center';
+      ctx.fillText('Object (物)', x, baseY + (height >= 0 ? 18 : -10));
+    }
+
+    // Draw Object at Infinity Indicator
+    function drawInfinityObject() {
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('⚡ 物體在無限遠 (Object at u = ∞)', 15, 30);
+
+      // Draw incoming parallel beam arrows on left edge
+      ctx.strokeStyle = '#94a3b8';
+      ctx.setLineDash([4, 4]);
+      for (let y = axisY - 80; y <= axisY + 80; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(60, y);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    }
+
+    // Draw Formed Image (Translucent Opacity 0.6)
+    function drawFormedImage(x, baseY, height, isPoint, isVirtual) {
+      if (isPoint) {
+        // Point Image at Focus
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath();
+        ctx.arc(x, baseY, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText('Point Image (點像)', x, baseY - 12);
+        return;
+      }
+
+      const topY = baseY - height;
+
+      ctx.save();
+      ctx.globalAlpha = 0.65; // Translucent image standard
+
+      // Image Line
+      ctx.strokeStyle = isVirtual ? '#2563eb' : '#16a34a';
+      ctx.lineWidth = 3;
+      if (isVirtual) ctx.setLineDash([6, 4]); // Dashed stem for virtual image
+
+      ctx.beginPath();
+      ctx.moveTo(x, baseY);
+      ctx.lineTo(x, topY);
+      ctx.stroke();
+
+      // Arrowhead / Tip
+      ctx.fillStyle = isVirtual ? '#60a5fa' : '#4ade80';
+      ctx.beginPath();
+      ctx.arc(x, topY, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      // Label
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillStyle = isVirtual ? '#1d4ed8' : '#15803d';
+      ctx.textAlign = 'center';
+      ctx.fillText(isVirtual ? 'Virtual Image (虛像)' : 'Real Image (實像)', x, topY + (height >= 0 ? -12 : 20));
+    }
+
+    // Draw HKDSE 3 Rays with Dynamic Propagation Animation
+    function drawRays(objX, objY, imgX, imgY, isVirtual) {
+      const fPx = FOCAL_LENGTH * SCALE;
+      const fFront = lensX - fPx;
+      const fBack = lensX + fPx;
+
+      const r1 = document.getElementById('ray1-check').checked;
+      const r2 = document.getElementById('ray2-check').checked;
+      const r3 = document.getElementById('ray3-check').checked;
+
+      // Anim phase: 0.0 -> 0.5 (Incident to Lens), 0.5 -> 1.0 (Refracted)
+      const phase1 = Math.min(1.0, animProgress * 2.0);
+      const phase2 = Math.max(0.0, (animProgress - 0.5) * 2.0);
+
+      // Helper function to draw animated line segment
+      function drawSeg(x1, y1, x2, y2, color, progress, dashed = false) {
+        if (progress <= 0) return;
+        const curX = x1 + (x2 - x1) * progress;
+        const curY = y1 + (y2 - y1) * progress;
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        if (dashed) ctx.setLineDash([5, 5]);
+        else ctx.setLineDash([]);
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(curX, curY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // RULE 1: Parallel to Principal Axis -> Refracts through back focus f
+      if (r1) {
+        // Incident segment to lens
+        drawSeg(objX, objY, lensX, objY, 'var(--ray-1)', phase1);
+
+        if (!isVirtual) {
+          // Refracts towards real image
+          const targetX = canvasWidth;
+          const slope = (imgY - objY) / (imgX - lensX);
+          const targetY = objY + slope * (targetX - lensX);
+          drawSeg(lensX, objY, targetX, targetY, 'var(--ray-1)', phase2);
+        } else {
+          // Virtual Image (Diverging real rays forward, dotted extension backward)
+          const slope = (objY - imgY) / (lensX - imgX);
+          const forwardY = objY + slope * (canvasWidth - lensX);
+          drawSeg(lensX, objY, canvasWidth, forwardY, 'var(--ray-1)', phase2);
+
+          // Backward Dotted Extension to Virtual Image
+          if (phase2 > 0) {
+            drawSeg(lensX, objY, imgX, imgY, 'var(--ray-1)', phase2, true);
+          }
+        }
+      }
+
+      // RULE 2: Passes through Optical Center -> Undeviated
+      if (r2) {
+        const slope = (axisY - objY) / (lensX - objX);
+        const forwardY = axisY + slope * (canvasWidth - lensX);
+
+        drawSeg(objX, objY, lensX, axisY, 'var(--ray-2)', phase1);
+        drawSeg(lensX, axisY, canvasWidth, forwardY, 'var(--ray-2)', phase2);
+
+        if (isVirtual && phase2 > 0) {
+          drawSeg(lensX, axisY, imgX, imgY, 'var(--ray-2)', phase2, true);
+        }
+      }
+
+      // RULE 3: Passes through / towards Focal Point -> Refracts parallel
+      if (r3) {
+        if (!isVirtual) {
+          // Real Image Case: Ray passes through front focus f to lens
+          const slope = (axisY - objY) / (fFront - objX);
+          const lensY = objY + slope * (lensX - objX);
+
+          drawSeg(objX, objY, lensX, lensY, 'var(--ray-3)', phase1);
+          drawSeg(lensX, lensY, canvasWidth, lensY, 'var(--ray-3)', phase2);
+        } else {
+          // Virtual Image Case: Line from front focus through object tip to lens
+          const slope = (objY - axisY) / (objX - fFront);
+          const lensY = axisY + slope * (lensX - fFront);
+
+          drawSeg(objX, objY, lensX, lensY, 'var(--ray-3)', phase1);
+          drawSeg(lensX, lensY, canvasWidth, lensY, 'var(--ray-3)', phase2);
+
+          // Virtual backward parallel extension
+          if (phase2 > 0) {
+            drawSeg(lensX, lensY, imgX, imgY, 'var(--ray-3)', phase2, true);
+          }
+        }
+      }
+    }
+
+    // Special Case: Rays from Infinity (Parallel Incident Rays)
+    function drawParallelRaysFromInfinity() {
+      const fPx = FOCAL_LENGTH * SCALE;
+      const fBack = lensX + fPx;
+      const phase1 = Math.min(1.0, animProgress * 2.0);
+      const phase2 = Math.max(0.0, (animProgress - 0.5) * 2.0);
+
+      const rayYOffsets = [-60, -30, 30, 60];
+      const colors = ['var(--ray-1)', 'var(--ray-2)', 'var(--ray-3)', 'var(--ray-1)'];
+
+      rayYOffsets.forEach((yOff, i) => {
+        const startY = axisY + yOff;
+        // Incident parallel ray
+        ctx.strokeStyle = colors[i];
+        ctx.lineWidth = 2;
+
+        const curX1 = 0 + (lensX - 0) * phase1;
+        ctx.beginPath(); ctx.moveTo(0, startY); ctx.lineTo(curX1, startY); ctx.stroke();
+
+        // Refracted ray converging at focus (fBack, axisY)
+        if (phase2 > 0) {
+          const targetX = canvasWidth;
+          const slope = (axisY - startY) / (fBack - lensX);
+          const targetY = startY + slope * (canvasWidth - lensX);
+
+          const curX2 = lensX + (targetX - lensX) * phase2;
+          const curY2 = startY + (targetY - startY) * phase2;
+
+          ctx.beginPath(); ctx.moveTo(lensX, startY); ctx.lineTo(curX2, curY2); ctx.stroke();
+        }
+      });
+    }
+
+    // Special Case: Object at Focal Point (u = f) -> Refracted Rays are Parallel
+    function drawParallelRefractedRays(objX, objY) {
+      const phase1 = Math.min(1.0, animProgress * 2.0);
+      const phase2 = Math.max(0.0, (animProgress - 0.5) * 2.0);
+
+      // Rule 1: Parallel -> Refracts through back focus
+      const fPx = FOCAL_LENGTH * SCALE;
+      const fBack = lensX + fPx;
+
+      ctx.strokeStyle = 'var(--ray-1)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(objX, objY); ctx.lineTo(objX + (lensX - objX) * phase1, objY); ctx.stroke();
+
+      if (phase2 > 0) {
+        const slope = (axisY - objY) / (fBack - lensX);
+        const endY = objY + slope * (canvasWidth - lensX);
+        ctx.beginPath(); ctx.moveTo(lensX, objY); ctx.lineTo(lensX + (canvasWidth - lensX) * phase2, objY + (endY - objY) * phase2); ctx.stroke();
+      }
+
+      // Rule 2: Central -> Passes straight
+      ctx.strokeStyle = 'var(--ray-2)';
+      ctx.beginPath(); ctx.moveTo(objX, objY); ctx.lineTo(objX + (lensX - objX) * phase1, objY + (axisY - objY) * phase1); ctx.stroke();
+
+      if (phase2 > 0) {
+        const slope = (axisY - objY) / (lensX - objX);
+        const endY = axisY + slope * (canvasWidth - lensX);
+        ctx.beginPath(); ctx.moveTo(lensX, axisY); ctx.lineTo(lensX + (canvasWidth - lensX) * phase2, axisY + (endY - axisY) * phase2); ctx.stroke();
+      }
+    }
+
+    // ==========================================
+    // INTERACTIVE DRAGGING & TOUCH EVENTS
+    // ==========================================
+    function initDragEvents() {
+      let isDragging = false;
+
+      function getCanvasCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: clientX - rect.left,
+          y: clientY - rect.top
+        };
+      }
+
+      function handleStart(e) {
+        if (isPlaying) return; // Disable dragging during play
+        if (objU === 'inf') return; // Infinity position managed via presets
+
+        const coords = getCanvasCoords(e);
+        const currentObjX = lensX - objU * SCALE;
+        const h0 = 45;
+        const hOffsets = [h0, h0 * 0.5, 0, -h0 * 0.5, -h0];
+        const currentObjY = axisY - hOffsets[objYLevel];
+
+        // Hit box test for bulb
+        const dist = Math.hypot(coords.x - currentObjX, coords.y - currentObjY);
+        if (dist < 35 || Math.abs(coords.x - currentObjX) < 20) {
+          isDragging = true;
+        }
+      }
+
+      function handleMove(e) {
+        if (!isDragging || isPlaying) return;
+        e.preventDefault();
+
+        const coords = getCanvasCoords(e);
+
+        // 1. Horizontal Distance Snap (u)
+        let rawU = (lensX - coords.x) / SCALE;
+        rawU = Math.max(1.0, Math.min(18.0, rawU)); // Clamp distance range
+
+        // Snap Mechanism: 0.5cm grid, magnetic lock at f (5.0) and 2f (10.0)
+        if (Math.abs(rawU - 5.0) < 0.35) rawU = 5.0;
+        else if (Math.abs(rawU - 10.0) < 0.35) rawU = 10.0;
+        else rawU = Math.round(rawU * 2) / 2; // 0.5cm snapping
+
+        objU = rawU;
+
+        // 2. Vertical Off-axis Level Snap (5 Fixed levels)
+        const relativeY = axisY - coords.y; // positive above axis
+        if (relativeY > 30) objYLevel = 0; // Top
+        else if (relativeY > 10) objYLevel = 1; // Upper-mid
+        else if (relativeY > -10) objYLevel = 2; // Center axis
+        else if (relativeY > -30) objYLevel = 3; // Lower-mid
+        else objYLevel = 4; // Bottom
+
+        // Update active preset button highlight
+        document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+        if (objU === 12) document.getElementById('p-12').classList.add('active');
+        else if (objU === 10) document.getElementById('p-10').classList.add('active');
+        else if (objU === 7.5) document.getElementById('p-75').classList.add('active');
+        else if (objU === 5) document.getElementById('p-50').classList.add('active');
+        else if (objU === 3) document.getElementById('p-30').classList.add('active');
+
+        updateDataDisplay();
+        draw();
+      }
+
+      function handleEnd() {
+        isDragging = false;
+      }
+
+      canvas.addEventListener('mousedown', handleStart);
+      window.addEventListener('mousemove', handleMove);
+      window.addEventListener('mouseup', handleEnd);
+
+      canvas.addEventListener('touchstart', handleStart, { passive: false });
+      window.addEventListener('touchmove', handleMove, { passive: false });
+      window.addEventListener('touchend', handleEnd);
+    }
+  </script>
+</body>
+</html>
