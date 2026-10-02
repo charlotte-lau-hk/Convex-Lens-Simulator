@@ -515,12 +515,23 @@
       color: var(--danger);
     }
 
+    .quiz-result-badge.na {
+      display: inline-block;
+      background: #e2e8f0;
+      color: #475569;
+    }
+
     .correct-ans-note {
       font-size: 0.75rem;
       color: var(--danger);
       font-weight: 700;
       margin-top: 4px;
       display: none;
+    }
+
+    .correct-ans-note.na-info {
+      color: #334155;
+      font-weight: 600;
     }
 
     /* Warning Banner */
@@ -879,6 +890,8 @@
         lblM: "Magnification (m)",
         outsideCanvas: "Outside canvas",
         atInfinity: "At infinity",
+        notApplicable: "N/A",
+        noFiniteImageNote: "Object at focus, refracted rays are parallel, no image is formed at a finite distance.",
         correct: "Correct",
         incorrect: "Incorrect",
         correctAnsPrefix: "Correct answer: ",
@@ -939,6 +952,8 @@
         lblM: "線性放大率 (m)",
         outsideCanvas: "超出畫布邊界",
         atInfinity: "無限遠",
+        notApplicable: "不適用",
+        noFiniteImageNote: "物體在焦點上，折射光線互相平行，不形成有限距離的像。",
         correct: "正確",
         incorrect: "錯誤",
         correctAnsPrefix: "正確答案：",
@@ -1185,7 +1200,7 @@
 
       if (phys.isInf) {
         valV.innerText = t.atInfinity;
-        valM.innerText = "∞";
+        valM.innerText = t.notApplicable;
       } else {
         const vPx = phys.v * SCALE;
         const isOutside = (lensX + vPx > canvasWidth) || (lensX + vPx < 0);
@@ -1214,7 +1229,7 @@
           appVal.innerText = t.apps.spotlight;
           subLine.innerHTML = `${makeFracHTML('1', '5.0')} = ${makeFracHTML('1', '5.0')} + ${makeFracHTML('1', 'v')} &nbsp;⇒&nbsp; ${makeFracHTML('1', 'v')} = 0`;
           vLine.innerHTML = `<strong>v = ∞</strong> (${t.atInfinity})`;
-          mLine.innerHTML = `<strong>m = ∞</strong>`;
+          mLine.innerHTML = `<strong>m = ${t.notApplicable}</strong>`;
           vNote.style.display = 'none';
         } else {
           if (objU > 10) appVal.innerText = t.apps.camera;
@@ -1235,10 +1250,15 @@
     function handlePlay() {
       if (isPlaying) return;
 
+      const isAtFocus = Math.abs(objU - 5.0) < 0.001;
       const unans = [];
-      if (!quizAnswers.mag) unans.push('mag');
-      if (!quizAnswers.ori) unans.push('ori');
-      if (!quizAnswers.nat) unans.push('nat');
+
+      // If u = f, only position (Q4) is required
+      if (!isAtFocus) {
+        if (!quizAnswers.mag) unans.push('mag');
+        if (!quizAnswers.ori) unans.push('ori');
+        if (!quizAnswers.nat) unans.push('nat');
+      }
       if (!quizAnswers.pos) unans.push('pos');
 
       if (unans.length > 0) {
@@ -1297,6 +1317,7 @@
 
         const note = document.getElementById(`note-${cat}`);
         note.style.display = 'none';
+        note.classList.remove('na-info');
       });
 
       updateDataDisplay();
@@ -1317,7 +1338,7 @@
         return { mag: 'magnified', ori: 'inverted', nat: 'real', pos: 'beyond_2f' };
       }
       if (Math.abs(objU - 5.0) < 0.001) {
-        return { mag: 'magnified', ori: 'erect', nat: 'virtual', pos: 'infinity' };
+        return { mag: 'na', ori: 'na', nat: 'na', pos: 'infinity' };
       }
       if (objU < 5.0) {
         return { mag: 'magnified', ori: 'erect', nat: 'virtual', pos: 'behind_lens' };
@@ -1343,15 +1364,23 @@
 
         badge.style.display = 'inline-block';
 
-        if (userAns === rightAns) {
+        if (rightAns === 'na') {
+          badge.innerText = t.notApplicable;
+          badge.className = 'quiz-result-badge na';
+          note.innerText = t.noFiniteImageNote;
+          note.style.display = 'block';
+          note.classList.add('na-info');
+        } else if (userAns === rightAns) {
           badge.innerText = `✓ ${t.correct}`;
           badge.className = 'quiz-result-badge correct';
           note.style.display = 'none';
+          note.classList.remove('na-info');
         } else {
           badge.innerText = `✗ ${t.incorrect}`;
           badge.className = 'quiz-result-badge incorrect';
           note.innerText = `${t.correctAnsPrefix}${optionLabels[cat][rightAns]}`;
           note.style.display = 'block';
+          note.classList.remove('na-info');
         }
       });
     }
