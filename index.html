@@ -717,7 +717,7 @@
 
     // State Variables
     let objU = 12.0; // cm, 'inf' for infinity
-    let objYLevel = 2; // 0: top (+70px), 1: upper-mid (+35px), 2: center (0px), 3: lower-mid (-35px), 4: bottom (-70px)
+    let objYLevel = 0; // 0: top (+70px), 1: upper-mid (+35px), 2: lower-mid (-35px), 3: bottom (-70px) - NEVER on axis
     const H_SPREAD = 70; // Vertical height spread
 
     let quizAnswers = {
@@ -827,8 +827,7 @@
       const rect = wrapper.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
 
-      // DO NOT set canvas.style.width/height in JS!
-      // Allow CSS width: 100% to fluidly handle responsive width layout.
+      // Dynamic fluid width configuration
       canvasWidth = Math.max(300, rect.width);
       canvasHeight = 420;
 
@@ -837,11 +836,16 @@
 
       ctx.scale(dpr, dpr);
 
-      // Lens positioned at 35% of canvas width to leave > 65% for the right side (fits f, 2f, 3f, 4f)
-      lensX = canvasWidth * 0.35;
-      axisY = canvasHeight * 0.5;
+      // DYNAMIC RESPONSIVE GEOMETRY SCALE:
+      // Allocate ~13.8cm span on left of lens (fits u = 12.5cm max drag + padding)
+      // and ~16.2cm span on right of lens (fits f, 2f, 3f + padding).
+      const leftCm = 13.8;
+      const rightCm = 16.2;
+      const totalCm = leftCm + rightCm; // 30cm total horizontal span
 
-      SCALE = 26;
+      SCALE = canvasWidth / totalCm; // Dynamic pixels-per-cm
+      lensX = SCALE * leftCm; // Lens dynamically positioned so object NEVER goes off-canvas
+      axisY = canvasHeight * 0.5;
     }
 
     // Initialize Page
@@ -1171,7 +1175,7 @@
       ];
 
       focalPoints.forEach(pt => {
-        if (pt.x >= 0 && pt.x <= canvasWidth) {
+        if (pt.x >= 15 && pt.x <= canvasWidth - 15) {
           ctx.fillStyle = '#0f172a';
           ctx.beginPath();
           ctx.arc(pt.x, axisY, pt.label.endsWith('f') ? 4 : 3, 0, Math.PI * 2);
@@ -1187,9 +1191,9 @@
       // 4. Convex Lens
       drawConvexLens();
 
-      // Object Coordinates
+      // Object Coordinates (NEVER on axis: 4 non-zero heights)
       let objX, objY, objHeight;
-      const hOffsets = [H_SPREAD, H_SPREAD * 0.5, 0, -H_SPREAD * 0.5, -H_SPREAD];
+      const hOffsets = [H_SPREAD, H_SPREAD * 0.5, -H_SPREAD * 0.5, -H_SPREAD];
       objHeight = hOffsets[objYLevel];
 
       if (objU === 'inf') {
@@ -1506,7 +1510,7 @@
 
         const coords = getCanvasCoords(e);
         const currentObjX = lensX - objU * SCALE;
-        const hOffsets = [H_SPREAD, H_SPREAD * 0.5, 0, -H_SPREAD * 0.5, -H_SPREAD];
+        const hOffsets = [H_SPREAD, H_SPREAD * 0.5, -H_SPREAD * 0.5, -H_SPREAD];
         const currentObjY = axisY - hOffsets[objYLevel];
 
         const dist = Math.hypot(coords.x - currentObjX, coords.y - currentObjY);
@@ -1530,12 +1534,12 @@
 
         objU = rawU;
 
+        // 4 non-zero height levels
         const relativeY = axisY - coords.y;
-        if (relativeY > H_SPREAD * 0.75) objYLevel = 0;
-        else if (relativeY > H_SPREAD * 0.25) objYLevel = 1;
-        else if (relativeY > -H_SPREAD * 0.25) objYLevel = 2;
-        else if (relativeY > -H_SPREAD * 0.75) objYLevel = 3;
-        else objYLevel = 4;
+        if (relativeY > H_SPREAD * 0.5) objYLevel = 0;
+        else if (relativeY > 0) objYLevel = 1;
+        else if (relativeY > -H_SPREAD * 0.5) objYLevel = 2;
+        else objYLevel = 3;
 
         document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
         if (objU === 12) document.getElementById('p-12').classList.add('active');
