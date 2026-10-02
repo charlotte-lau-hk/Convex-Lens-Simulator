@@ -290,7 +290,7 @@
       color: var(--primary);
     }
 
-    /* Preset & Controls Bar */
+    /* Presets Bar */
     .preset-bar {
       display: flex;
       flex-wrap: wrap;
@@ -359,13 +359,13 @@
     }
 
     .color-dot {
-      width: 10px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       display: inline-block;
     }
 
-    /* Application Badge Card */
+    /* Application Badge Box */
     .app-badge-box {
       background: #f0fdf4;
       border: 1px solid #bbf7d0;
@@ -389,28 +389,53 @@
       margin-top: 2px;
     }
 
+    /* Pure CSS Mathematical Fraction Renderer */
+    .frac {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      font-family: 'Times New Roman', Times, serif;
+      font-style: italic;
+      padding: 0 3px;
+      line-height: 1.1;
+    }
+
+    .frac .num {
+      border-bottom: 1px solid var(--text-main);
+      padding: 0 2px 2px 2px;
+      font-size: 0.88em;
+    }
+
+    .frac .den {
+      padding: 2px 2px 0 2px;
+      font-size: 0.88em;
+    }
+
     /* Mathematical Formula Breakdown Card */
     .formula-card {
       background: var(--bg-card);
       border: 1px solid #e2e8f0;
       border-radius: 6px;
-      padding: 10px 12px;
-      font-size: 0.85rem;
-      line-height: 1.5;
+      padding: 12px;
+      font-size: 0.9rem;
+      line-height: 1.6;
     }
 
     .formula-line {
-      margin-bottom: 6px;
-      font-family: 'Times New Roman', Times, serif;
-      font-size: 0.95rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     .virtual-note {
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       color: var(--primary);
       font-weight: 600;
       margin-top: 6px;
-      padding-top: 4px;
+      padding-top: 6px;
       border-top: 1px dashed #cbd5e1;
     }
 
@@ -581,7 +606,7 @@
   <!-- Header -->
   <header>
     <div class="title-area">
-      <h1 id="app-title">Convex Lens Optics Simulator & Interactive Quiz / 凸透鏡成像模擬器及互動小測</h1>
+      <h1 id="app-title">Convex Lens Optics Simulator &amp; Interactive Quiz / 凸透鏡成像模擬器及互動小測</h1>
     </div>
     <div class="header-controls">
       <!-- Mode Switcher -->
@@ -679,15 +704,28 @@
           <div class="app-badge-value" id="app-badge-val">Camera / Human Eye</div>
         </div>
 
-        <!-- Live Step-by-Step Lens Formula Breakdown -->
-        <div class="card-title" style="margin-top: 14px;" id="formula-title">Lens Formula & Calculation</div>
+        <!-- Live Step-by-Step Lens Formula Breakdown Card -->
+        <div class="card-title" style="margin-top: 14px;" id="formula-title">Lens Formula &amp; Calculation</div>
         <div class="formula-card">
-          <div class="formula-line"><strong>Lens Equation:</strong> 1/f = 1/u + 1/v</div>
-          <div class="formula-line" id="calc-sub-line">1/5.0 = 1/12.0 + 1/v</div>
-          <div class="formula-line" id="calc-v-line"><strong>v = +8.57 cm</strong> (Real Image)</div>
-          <div class="formula-line" id="calc-m-line"><strong>m = |v/u| = 0.71×</strong> (Diminished)</div>
+          <div class="formula-line">
+            <strong id="lbl-eq-title">Lens Formula:</strong>
+            <div class="frac"><span class="num">1</span><span class="den">f</span></div>
+            <span>=</span>
+            <div class="frac"><span class="num">1</span><span class="den">u</span></div>
+            <span>+</span>
+            <div class="frac"><span class="num">1</span><span class="den">v</span></div>
+          </div>
+          <div class="formula-line" id="calc-sub-line">
+            <!-- Dynamically injected math equation -->
+          </div>
+          <div class="formula-line" id="calc-v-line">
+            <!-- Dynamically injected v result -->
+          </div>
+          <div class="formula-line" id="calc-m-line">
+            <!-- Dynamically injected m result -->
+          </div>
           <div class="virtual-note" id="virtual-explain-note" style="display:none;">
-            ℹ️ <em>Negative image distance v indicates a Virtual Image formed on the same side as the object.</em>
+            ℹ️ Negative image distance v indicates a Virtual Image formed on the same side as the object.
           </div>
         </div>
       </div>
@@ -775,6 +813,13 @@
     // GLOBAL STATE & HKDSE OPTICS CONSTANTS
     // ==========================================
     const FOCAL_LENGTH = 5.0; // cm
+
+    // Colorblind-friendly Okabe-Ito Palette for Canvas JS
+    const RAY_COLORS = {
+      r1: '#d95f02', // Vermilion / Orange
+      r2: '#0072b2', // Deep Sky Blue
+      r3: '#cc79a7'  // Reddish Purple / Magenta
+    };
     
     let currentMode = 'learning'; // 'learning' or 'quiz'
     let currentLang = 'en';       // Default Language: English
@@ -840,6 +885,7 @@
         learnPanelTitle: "HKDSE Optical Application",
         appBadgeLbl: "Practical Device Application:",
         formulaTitle: "Lens Formula & Calculation",
+        lblEqTitle: "Lens Formula:",
         virtualNoteText: "ℹ️ Negative image distance v indicates a Virtual Image formed on the same side as the object.",
         apps: {
           telescope: "Astronomical Telescope Objective",
@@ -888,6 +934,7 @@
         learnPanelTitle: "HKDSE 光學應用範例",
         appBadgeLbl: "實際應用儀器：",
         formulaTitle: "透鏡公式與實時計算",
+        lblEqTitle: "透鏡公式：",
         virtualNoteText: "ℹ️ 負像距 v 代表折射光線發散，延伸交點形成同側虛像。",
         apps: {
           telescope: "天文望遠鏡物鏡",
@@ -1030,6 +1077,7 @@
       document.getElementById('learn-panel-title').innerText = t.learnPanelTitle;
       document.getElementById('app-badge-lbl').innerText = t.appBadgeLbl;
       document.getElementById('formula-title').innerText = t.formulaTitle;
+      document.getElementById('lbl-eq-title').innerText = t.lblEqTitle;
       document.getElementById('virtual-explain-note').innerText = t.virtualNoteText;
 
       updateDataDisplay();
@@ -1088,6 +1136,11 @@
       return { v, m, isInf: false, isParallel: false };
     }
 
+    // Helper function to generate clean CSS fraction HTML
+    function makeFracHTML(num, den) {
+      return `<div class="frac"><span class="num">${num}</span><span class="den">${den}</span></div>`;
+    }
+
     function updateDataDisplay() {
       const t = I18N[currentLang];
       const valU = document.getElementById('val-u');
@@ -1118,7 +1171,7 @@
         valM.innerText = phys.m === 0 ? "0" : `${phys.m.toFixed(2)}×`;
       }
 
-      // Update Learning Panel Formula & Application Badge
+      // Update Learning Panel Mathematical Equations & Application Badges
       if (currentMode === 'learning') {
         const appVal = document.getElementById('app-badge-val');
         const subLine = document.getElementById('calc-sub-line');
@@ -1128,15 +1181,15 @@
 
         if (objU === 'inf') {
           appVal.innerText = t.apps.telescope;
-          subLine.innerText = "1/5.0 = 1/∞ + 1/v  ⇒  1/v = 1/5.0";
-          vLine.innerHTML = "<strong>v = +5.00 cm</strong>";
-          mLine.innerHTML = "<strong>m = 0×</strong>";
+          subLine.innerHTML = `${makeFracHTML('1', '5.0')} = ${makeFracHTML('1', '∞')} + ${makeFracHTML('1', 'v')} &nbsp;⇒&nbsp; ${makeFracHTML('1', 'v')} = ${makeFracHTML('1', '5.0')}`;
+          vLine.innerHTML = `<strong>v = +5.00 cm</strong>`;
+          mLine.innerHTML = `<strong>m = 0×</strong>`;
           vNote.style.display = 'none';
         } else if (phys.isInf) {
           appVal.innerText = t.apps.spotlight;
-          subLine.innerText = "1/5.0 = 1/5.0 + 1/v  ⇒  1/v = 0";
-          vLine.innerHTML = "<strong>v = ∞</strong>";
-          mLine.innerHTML = "<strong>m = ∞</strong>";
+          subLine.innerHTML = `${makeFracHTML('1', '5.0')} = ${makeFracHTML('1', '5.0')} + ${makeFracHTML('1', 'v')} &nbsp;⇒&nbsp; ${makeFracHTML('1', 'v')} = 0`;
+          vLine.innerHTML = `<strong>v = ∞</strong> (${t.atInfinity})`;
+          mLine.innerHTML = `<strong>m = ∞</strong>`;
           vNote.style.display = 'none';
         } else {
           if (objU > 10) appVal.innerText = t.apps.camera;
@@ -1144,9 +1197,9 @@
           else if (objU > 5) appVal.innerText = t.apps.projector;
           else appVal.innerText = t.apps.magnifier;
 
-          subLine.innerText = `1/5.0 = 1/${objU.toFixed(1)} + 1/v`;
-          vLine.innerHTML = `<strong>v = ${phys.v > 0 ? '+' : ''}${phys.v.toFixed(2)} cm</strong> (${phys.v > 0 ? 'Real' : 'Virtual'})`;
-          mLine.innerHTML = `<strong>m = |v/u| = ${phys.m.toFixed(2)}×</strong>`;
+          subLine.innerHTML = `${makeFracHTML('1', '5.0')} = ${makeFracHTML('1', objU.toFixed(1))} + ${makeFracHTML('1', 'v')}`;
+          vLine.innerHTML = `<strong>v = ${phys.v > 0 ? '+' : ''}${phys.v.toFixed(2)} cm</strong> (${phys.v > 0 ? 'Real Image' : 'Virtual Image'})`;
+          mLine.innerHTML = `<strong>m = |${makeFracHTML('v', 'u')}| = ${phys.m.toFixed(2)}×</strong>`;
 
           vNote.style.display = phys.v < 0 ? 'block' : 'none';
         }
@@ -1470,7 +1523,7 @@
         const curY = y1 + (y2 - y1) * progress;
 
         ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         if (dashed) ctx.setLineDash([5, 5]);
         else ctx.setLineDash([]);
 
@@ -1478,47 +1531,47 @@
         ctx.setLineDash([]);
       }
 
-      // Rule 1: Parallel Ray (Vermilion/Orange)
+      // Rule 1: Parallel Ray (Vermilion/Orange - RAY_COLORS.r1)
       if (r1) {
-        drawSeg(objX, objY, lensX, objY, 'var(--ray-1)', phase1);
+        drawSeg(objX, objY, lensX, objY, RAY_COLORS.r1, phase1);
 
         if (!isVirtual) {
           const slope = (imgY - objY) / (imgX - lensX);
           const targetY = objY + slope * (canvasWidth - lensX);
-          drawSeg(lensX, objY, canvasWidth, targetY, 'var(--ray-1)', phase2);
+          drawSeg(lensX, objY, canvasWidth, targetY, RAY_COLORS.r1, phase2);
         } else {
           const slope = (objY - imgY) / (lensX - imgX);
           const forwardY = objY + slope * (canvasWidth - lensX);
-          drawSeg(lensX, objY, canvasWidth, forwardY, 'var(--ray-1)', phase2);
-          if (phase2 > 0) drawSeg(lensX, objY, imgX, imgY, 'var(--ray-1)', phase2, true);
+          drawSeg(lensX, objY, canvasWidth, forwardY, RAY_COLORS.r1, phase2);
+          if (phase2 > 0) drawSeg(lensX, objY, imgX, imgY, RAY_COLORS.r1, phase2, true);
         }
       }
 
-      // Rule 2: Central Ray (Sky Blue)
+      // Rule 2: Central Ray (Sky Blue - RAY_COLORS.r2)
       if (r2) {
         const slope = (axisY - objY) / (lensX - objX);
         const forwardY = axisY + slope * (canvasWidth - lensX);
 
-        drawSeg(objX, objY, lensX, axisY, 'var(--ray-2)', phase1);
-        drawSeg(lensX, axisY, canvasWidth, forwardY, 'var(--ray-2)', phase2);
-        if (isVirtual && phase2 > 0) drawSeg(lensX, axisY, imgX, imgY, 'var(--ray-2)', phase2, true);
+        drawSeg(objX, objY, lensX, axisY, RAY_COLORS.r2, phase1);
+        drawSeg(lensX, axisY, canvasWidth, forwardY, RAY_COLORS.r2, phase2);
+        if (isVirtual && phase2 > 0) drawSeg(lensX, axisY, imgX, imgY, RAY_COLORS.r2, phase2, true);
       }
 
-      // Rule 3: Focal Ray (Magenta)
+      // Rule 3: Focal Ray (Magenta - RAY_COLORS.r3)
       if (r3) {
         if (!isVirtual) {
           const slope = (axisY - objY) / (fFront - objX);
           const lensY = objY + slope * (lensX - objX);
 
-          drawSeg(objX, objY, lensX, lensY, 'var(--ray-3)', phase1);
-          drawSeg(lensX, lensY, canvasWidth, lensY, 'var(--ray-3)', phase2);
+          drawSeg(objX, objY, lensX, lensY, RAY_COLORS.r3, phase1);
+          drawSeg(lensX, lensY, canvasWidth, lensY, RAY_COLORS.r3, phase2);
         } else {
           const slope = (objY - axisY) / (objX - fFront);
           const lensY = axisY + slope * (lensX - fFront);
 
-          drawSeg(objX, objY, lensX, lensY, 'var(--ray-3)', phase1);
-          drawSeg(lensX, lensY, canvasWidth, lensY, 'var(--ray-3)', phase2);
-          if (phase2 > 0) drawSeg(lensX, lensY, imgX, imgY, 'var(--ray-3)', phase2, true);
+          drawSeg(objX, objY, lensX, lensY, RAY_COLORS.r3, phase1);
+          drawSeg(lensX, lensY, canvasWidth, lensY, RAY_COLORS.r3, phase2);
+          if (phase2 > 0) drawSeg(lensX, lensY, imgX, imgY, RAY_COLORS.r3, phase2, true);
         }
       }
     }
@@ -1530,12 +1583,12 @@
       const phase2 = Math.max(0.0, (animProgress - 0.5) * 2.0);
 
       const rayYOffsets = [-60, -30, 30, 60];
-      const colors = ['var(--ray-1)', 'var(--ray-2)', 'var(--ray-3)', 'var(--ray-1)'];
+      const colors = [RAY_COLORS.r1, RAY_COLORS.r2, RAY_COLORS.r3, RAY_COLORS.r1];
 
       rayYOffsets.forEach((yOff, i) => {
         const startY = axisY + yOff;
         ctx.strokeStyle = colors[i];
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
 
         const curX1 = lensX * phase1;
         ctx.beginPath(); ctx.moveTo(0, startY); ctx.lineTo(curX1, startY); ctx.stroke();
@@ -1558,7 +1611,7 @@
       const fPx = FOCAL_LENGTH * SCALE;
       const fBack = lensX + fPx;
 
-      ctx.strokeStyle = 'var(--ray-1)'; ctx.lineWidth = 2;
+      ctx.strokeStyle = RAY_COLORS.r1; ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.moveTo(objX, objY); ctx.lineTo(objX + (lensX - objX) * phase1, objY); ctx.stroke();
 
       if (phase2 > 0) {
@@ -1567,7 +1620,7 @@
         ctx.beginPath(); ctx.moveTo(lensX, objY); ctx.lineTo(lensX + (canvasWidth - lensX) * phase2, objY + (endY - objY) * phase2); ctx.stroke();
       }
 
-      ctx.strokeStyle = 'var(--ray-2)';
+      ctx.strokeStyle = RAY_COLORS.r2; ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.moveTo(objX, objY); ctx.lineTo(objX + (lensX - objX) * phase1, objY + (axisY - objY) * phase1); ctx.stroke();
 
       if (phase2 > 0) {
