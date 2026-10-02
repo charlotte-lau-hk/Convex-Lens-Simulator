@@ -15,15 +15,15 @@
       --text-muted: #475569;
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
-      --success: #15803d;
+      --success: #16a34a;
       --danger: #dc2626;
       --warning-bg: #fef2f2;
       --warning-border: #fca5a5;
-      
-      /* Colorblind Friendly Ray Palette (Okabe-Ito / Wong Palette) */
-      --ray-1: #d95f02; /* Rule 1: Vermilion / Orange */
-      --ray-2: #0072b2; /* Rule 2: Deep Sky Blue */
-      --ray-3: #cc79a7; /* Rule 3: Reddish Purple / Magenta */
+
+      /* Colorblind-friendly Okabe-Ito Palette */
+      --ray-1: #d95f02; /* Vermilion / Orange - Parallel Ray */
+      --ray-2: #0072b2; /* Deep Sky Blue - Central Ray */
+      --ray-3: #cc79a7; /* Reddish Purple / Magenta - Focal Ray */
 
       --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
       --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -43,10 +43,9 @@
       display: flex;
       flex-direction: column;
       user-select: none;
-      overflow-x: hidden;
     }
 
-    /* Mobile Portrait Warning Overlay */
+    /* Portrait warning for mobile */
     #portrait-warning {
       display: none;
       position: fixed;
@@ -83,6 +82,8 @@
       justify-content: space-between;
       align-items: center;
       box-shadow: var(--shadow-sm);
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     .title-area h1 {
@@ -97,22 +98,50 @@
       align-items: center;
     }
 
+    /* Mode Selector Switch */
+    .mode-switch {
+      display: flex;
+      background: #e2e8f0;
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .mode-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: var(--bg-surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
     .lang-btn {
       background: #e2e8f0;
       border: 1px solid var(--border-color);
-      padding: 6px 14px;
+      padding: 6px 12px;
       border-radius: 6px;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
       color: var(--text-main);
       transition: all 0.2s;
+      font-size: 0.85rem;
     }
 
     .lang-btn:hover {
       background: #cbd5e1;
     }
 
-    /* Steps Flow Overlay Bar */
+    /* Steps Guidance Bar */
     .steps-bar {
       background: #eff6ff;
       border-bottom: 1px solid #bfdbfe;
@@ -122,9 +151,9 @@
       align-items: center;
       gap: 16px;
       font-size: 0.85rem;
-      font-weight: 700;
+      font-weight: 600;
       color: #1e40af;
-      flex-wrap: wrap;
+      transition: all 0.3s;
     }
 
     .step-item {
@@ -136,18 +165,19 @@
     .step-num {
       background: var(--primary);
       color: white;
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
     }
 
-    /* Main Layout Grid - Fully Responsive */
+    /* Main Container Layout */
     .app-container {
       display: flex;
+      flex-direction: row;
       flex: 1;
       gap: 16px;
       padding: 16px;
@@ -156,62 +186,58 @@
       width: 100%;
     }
 
-    /* Responsively stack layout on smaller screen widths */
+    /* Responsive Stacking below 960px */
     @media (max-width: 960px) {
       .app-container {
         flex-direction: column;
       }
-      .panel-column {
-        min-width: 100% !important;
-      }
     }
 
-    /* Left Column: Canvas + Light Data Dashboard + Controls */
     .canvas-column {
-      flex: 68;
+      flex: 1 1 65%;
+      min-width: 0;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      min-width: 0; /* Prevents flex children from causing infinite expansion */
     }
 
-    .canvas-card {
+    .panel-column {
+      flex: 1 1 35%;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 12px;
+      padding: 14px;
       box-shadow: var(--shadow-sm);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      min-width: 0;
     }
 
-    .canvas-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .canvas-title {
+    .card-title {
       font-size: 0.95rem;
       font-weight: 700;
       color: var(--text-main);
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .canvas-wrapper {
       position: relative;
       width: 100%;
       background: #ffffff;
-      border: 1px solid #cbd5e1;
+      border: 1px solid #e2e8f0;
       border-radius: 6px;
       overflow: hidden;
     }
 
-    /* Fluid canvas dimensions controlled strictly by CSS width */
     canvas {
       display: block;
       width: 100%;
@@ -223,53 +249,45 @@
       cursor: grabbing;
     }
 
-    /* PROMINENT LIGHT THEME DATA DISPLAY DASHBOARD */
+    /* Horizontal Light Theme Data Display Dashboard */
     .data-dashboard {
       background: var(--bg-surface);
-      color: var(--text-main);
-      border-radius: 8px;
-      padding: 12px 20px;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      gap: 16px;
-      box-shadow: var(--shadow-sm);
       border: 1px solid var(--border-color);
-      flex-wrap: wrap;
+      border-radius: 8px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow-sm);
     }
 
-    .data-metric {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex: 1;
-      min-width: 120px;
-      text-align: center;
-      border-right: 1px solid var(--border-color);
-      padding: 0 10px;
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
     }
 
-    .data-metric:last-child {
-      border-right: none;
+    @media (max-width: 640px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
-    .data-metric-label {
-      font-size: 0.8rem;
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px 12px;
+    }
+
+    .metric-label {
+      font-size: 0.78rem;
+      font-weight: 600;
       color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .metric-value {
+      font-size: 1.1rem;
       font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .data-metric-value {
-      font-size: 1.35rem;
-      font-weight: 800;
       color: var(--primary);
-    }
-
-    .data-metric-value.highlight {
-      color: #d97706;
     }
 
     /* Preset & Controls Bar */
@@ -297,7 +315,7 @@
       padding: 6px 12px;
       border-radius: 6px;
       font-size: 0.8rem;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
       color: var(--text-main);
       transition: all 0.15s;
@@ -328,58 +346,78 @@
     .toggle-group {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      font-weight: 700;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
       cursor: pointer;
     }
 
     .toggle-group input {
       cursor: pointer;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
     }
 
     .color-dot {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       display: inline-block;
     }
 
-    /* Right Column: Quiz Panel */
-    .panel-column {
-      flex: 32;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 300px;
+    /* Application Badge Card */
+    .app-badge-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
     }
 
-    .card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 14px;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .card-title {
-      font-size: 0.95rem;
+    .app-badge-title {
+      font-size: 0.75rem;
       font-weight: 700;
-      color: var(--text-main);
-      margin-bottom: 10px;
-      padding-bottom: 6px;
-      border-bottom: 2px solid #f1f5f9;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      color: #166534;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .app-badge-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--success);
+      margin-top: 2px;
+    }
+
+    /* Mathematical Formula Breakdown Card */
+    .formula-card {
+      background: var(--bg-card);
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .formula-line {
+      margin-bottom: 6px;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 0.95rem;
+    }
+
+    .virtual-note {
+      font-size: 0.75rem;
+      color: var(--primary);
+      font-weight: 600;
+      margin-top: 6px;
+      padding-top: 4px;
+      border-top: 1px dashed #cbd5e1;
     }
 
     /* Quiz Panel Styling */
     .quiz-item {
       margin-bottom: 12px;
-      padding: 10px;
+      padding: 8px;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 6px;
@@ -392,10 +430,10 @@
     }
 
     .quiz-q {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: var(--text-main);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       display: flex;
       justify-content: space-between;
     }
@@ -403,7 +441,7 @@
     .quiz-options {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 4px;
     }
 
     .opt-btn {
@@ -411,9 +449,9 @@
       min-width: 30%;
       background: #ffffff;
       border: 1px solid var(--border-color);
-      padding: 6px 8px;
+      padding: 5px 6px;
       border-radius: 4px;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       font-weight: 600;
       cursor: pointer;
       text-align: center;
@@ -453,10 +491,10 @@
     }
 
     .correct-ans-note {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       color: var(--danger);
       font-weight: 700;
-      margin-top: 6px;
+      margin-top: 4px;
       display: none;
     }
 
@@ -468,7 +506,7 @@
       color: var(--danger);
       padding: 8px 12px;
       border-radius: 6px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 700;
       margin-bottom: 10px;
       align-items: center;
@@ -479,14 +517,14 @@
     .action-buttons {
       display: flex;
       gap: 10px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
 
     .btn {
       flex: 1;
-      padding: 12px;
+      padding: 10px;
       border-radius: 6px;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 700;
       cursor: pointer;
       border: none;
@@ -504,7 +542,7 @@
     }
 
     .btn-play:hover {
-      background: #166534;
+      background: #15803d;
     }
 
     .btn-reset {
@@ -516,17 +554,16 @@
       background: #475569;
     }
 
-    /* Locked overlay indicator */
     .canvas-locked-hint {
       position: absolute;
       top: 10px;
       right: 10px;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.75);
       color: white;
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 4px;
-      font-size: 0.78rem;
-      font-weight: 700;
+      font-size: 0.75rem;
+      font-weight: 600;
       display: none;
       pointer-events: none;
     }
@@ -538,7 +575,7 @@
   <div id="portrait-warning">
     <svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
     <h2 id="port-title">Please rotate your device</h2>
-    <p id="port-desc" style="margin-top: 8px; font-size: 0.9rem; color: #cbd5e1;">For the best optics simulation experience</p>
+    <p id="port-desc" style="margin-top: 8px; font-size: 0.9rem; color: #cbd5e1;">For the best HKDSE Optics simulation experience</p>
   </div>
 
   <!-- Header -->
@@ -547,12 +584,18 @@
       <h1 id="app-title">Convex Lens Optics Simulator & Interactive Quiz / 凸透鏡成像模擬器及互動小測</h1>
     </div>
     <div class="header-controls">
+      <!-- Mode Switcher -->
+      <div class="mode-switch">
+        <button class="mode-btn active" id="mode-learn-btn" onclick="switchMode('learning')">📖 Learning Mode</button>
+        <button class="mode-btn" id="mode-quiz-btn" onclick="switchMode('quiz')">📝 Quiz Mode</button>
+      </div>
+
       <button class="lang-btn" id="lang-toggle-btn" onclick="toggleLanguage()">繁體中文</button>
     </div>
   </header>
 
-  <!-- Step Guide Overlay Bar -->
-  <div class="steps-bar">
+  <!-- Step Guidance Bar (Quiz Mode Only) -->
+  <div class="steps-bar" id="steps-bar-element" style="display: none;">
     <div class="step-item"><span class="step-num">1</span> <span id="st-1">Move Object</span></div>
     <div>➔</div>
     <div class="step-item"><span class="step-num">2</span> <span id="st-2">Answer Quiz</span></div>
@@ -563,47 +606,45 @@
   <!-- Main Application Container -->
   <div class="app-container">
 
-    <!-- Left Column: Canvas + Horizontal Light Data Dashboard + Controls -->
+    <!-- Left Column: Canvas & Direct Controls -->
     <div class="canvas-column">
-      <div class="canvas-card">
-        <div class="canvas-header">
-          <span class="canvas-title" id="canvas-heading">Optical Canvas - Focal Length f = 5.0 cm</span>
-          <span style="font-size:0.78rem; color:var(--text-muted);" id="snap-hint">Grid Snap: 0.5cm (Auto-snap at f & 2f)</span>
-        </div>
+      <div class="card" style="padding: 10px;">
         <div class="canvas-wrapper">
-          <canvas id="opticsCanvas"></canvas>
-          <div class="canvas-locked-hint" id="lock-hint">🔒 Locked during Play (Press Reset to edit)</div>
+          <canvas id="opticsCanvas" height="380"></canvas>
+          <div class="canvas-locked-hint" id="lock-hint">🔒 Locked during Play (Press Reset to Edit)</div>
         </div>
       </div>
 
-      <!-- PROMINENT LIGHT THEME HORIZONTAL DATA DASHBOARD -->
+      <!-- Horizontal Light Theme Data Display Dashboard -->
       <div class="data-dashboard">
-        <div class="data-metric">
-          <div class="data-metric-label" id="lbl-u">Object distance (u)</div>
-          <div class="data-metric-value" id="val-u">12.0 cm</div>
-        </div>
-        <div class="data-metric">
-          <div class="data-metric-label" id="lbl-v">Image distance (v)</div>
-          <div class="data-metric-value highlight" id="val-v">--</div>
-        </div>
-        <div class="data-metric">
-          <div class="data-metric-label" id="lbl-m">Magnification (m)</div>
-          <div class="data-metric-value highlight" id="val-m">--</div>
+        <div class="dashboard-grid">
+          <div class="metric-card">
+            <div class="metric-label" id="lbl-u">Object Distance (u)</div>
+            <div class="metric-value" id="val-u">12.0 cm</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label" id="lbl-v">Image Distance (v)</div>
+            <div class="metric-value" id="val-v">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label" id="lbl-m">Magnification (m)</div>
+            <div class="metric-value" id="val-m">--</div>
+          </div>
         </div>
       </div>
 
       <!-- Presets Bar -->
       <div class="preset-bar">
-        <span class="preset-label" id="preset-lbl">Object Distance Presets:</span>
-        <button class="preset-btn" onclick="setPreset('inf')" id="p-inf">u = ∞ (At infinity)</button>
-        <button class="preset-btn" onclick="setPreset(12)" id="p-12">u &gt; 2f (12.0 cm)</button>
+        <span class="preset-label" id="preset-lbl">Presets:</span>
+        <button class="preset-btn" onclick="setPreset('inf')" id="p-inf">u = ∞</button>
+        <button class="preset-btn active" onclick="setPreset(12)" id="p-12">u &gt; 2f (12.0 cm)</button>
         <button class="preset-btn" onclick="setPreset(10)" id="p-10">u = 2f (10.0 cm)</button>
         <button class="preset-btn" onclick="setPreset(7.5)" id="p-75">f &lt; u &lt; 2f (7.5 cm)</button>
         <button class="preset-btn" onclick="setPreset(5)" id="p-50">u = f (5.0 cm)</button>
         <button class="preset-btn" onclick="setPreset(3)" id="p-30">u &lt; f (3.0 cm)</button>
       </div>
 
-      <!-- Ray Toggles with Colorblind Friendly Palette Legend -->
+      <!-- Ray Rules Toggle Switches -->
       <div class="ray-toggles">
         <label class="toggle-group">
           <input type="checkbox" id="ray1-check" checked onchange="draw()">
@@ -623,14 +664,39 @@
       </div>
     </div>
 
-    <!-- Right Column: Quiz Panel -->
+    <!-- Right Column: Learning / Quiz Panel -->
     <div class="panel-column">
 
-      <!-- Quiz Panel -->
-      <div class="card">
+      <!-- Learning Mode Active Panel -->
+      <div class="card" id="learning-panel">
+        <div class="card-title">
+          <span id="learn-panel-title">HKDSE Optical Application</span>
+        </div>
+
+        <!-- Application Badge -->
+        <div class="app-badge-box">
+          <div class="app-badge-title" id="app-badge-lbl">Practical Device Application:</div>
+          <div class="app-badge-value" id="app-badge-val">Camera / Human Eye</div>
+        </div>
+
+        <!-- Live Step-by-Step Lens Formula Breakdown -->
+        <div class="card-title" style="margin-top: 14px;" id="formula-title">Lens Formula & Calculation</div>
+        <div class="formula-card">
+          <div class="formula-line"><strong>Lens Equation:</strong> 1/f = 1/u + 1/v</div>
+          <div class="formula-line" id="calc-sub-line">1/5.0 = 1/12.0 + 1/v</div>
+          <div class="formula-line" id="calc-v-line"><strong>v = +8.57 cm</strong> (Real Image)</div>
+          <div class="formula-line" id="calc-m-line"><strong>m = |v/u| = 0.71×</strong> (Diminished)</div>
+          <div class="virtual-note" id="virtual-explain-note" style="display:none;">
+            ℹ️ <em>Negative image distance v indicates a Virtual Image formed on the same side as the object.</em>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz Mode Active Panel -->
+      <div class="card" id="quiz-panel" style="display: none;">
         <div class="card-title">
           <span id="quiz-title">Predict Image Characteristics</span>
-          <span style="font-size:0.75rem; font-weight:normal; color:var(--text-muted);" id="quiz-subtitle">Answer all before pressing Play</span>
+          <span style="font-size:0.75rem; font-weight:normal; color:var(--text-muted);" id="quiz-subtitle">Answer all before Play</span>
         </div>
 
         <div class="alert-banner" id="quiz-warning-alert">
@@ -684,7 +750,7 @@
             <span class="quiz-result-badge" id="badge-pos"></span>
           </div>
           <div class="quiz-options">
-            <button class="opt-btn" onclick="selectOpt('pos', 'behind_lens')" id="opt-pos-1">Same side as object</button>
+            <button class="opt-btn" onclick="selectOpt('pos', 'behind_lens')" id="opt-pos-1">Same side</button>
             <button class="opt-btn" onclick="selectOpt('pos', 'at_f')" id="opt-pos-2">At f</button>
             <button class="opt-btn" onclick="selectOpt('pos', 'between_f_2f')" id="opt-pos-3">Between f &amp; 2f</button>
             <button class="opt-btn" onclick="selectOpt('pos', 'at_2f')" id="opt-pos-4">At 2f</button>
@@ -706,19 +772,20 @@
 
   <script>
     // ==========================================
-    // GLOBAL STATE & HKDSE CONSTANTS
+    // GLOBAL STATE & HKDSE OPTICS CONSTANTS
     // ==========================================
     const FOCAL_LENGTH = 5.0; // cm
     
-    let currentLang = 'en'; // Default set to English
-    let isPlaying = false;
-    let animProgress = 1.0; // 0.0 to 1.0 for ray propagation animation
+    let currentMode = 'learning'; // 'learning' or 'quiz'
+    let currentLang = 'en';       // Default Language: English
+    let isPlaying = false;        // Used in Quiz mode for animation & locking
+    let animProgress = 1.0;
     let animReqId = null;
 
     // State Variables
-    let objU = 12.0; // cm, 'inf' for infinity
-    let objYLevel = 0; // 0: top (+70px), 1: upper-mid (+35px), 2: lower-mid (-35px), 3: bottom (-70px) - NEVER on axis
-    const H_SPREAD = 70; // Vertical height spread
+    let objU = 12.0;              // cm, or 'inf'
+    let objYLevel = 0;            // 0: Top (+70px), 1: Upper (+35px), 2: Lower (-35px), 3: Bottom (-70px)
+    const hOffsets = [70, 35, -35, -70]; // Off-axis heights (no zero level on axis)
 
     let quizAnswers = {
       mag: null,
@@ -727,74 +794,30 @@
       pos: null
     };
 
-    // DOM Elements
+    // DOM Elements & Canvas Variables
     const canvas = document.getElementById('opticsCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Canvas Coordinate Constants
     let canvasWidth, canvasHeight, lensX, axisY, SCALE;
 
-    // Bilingual Text Dictionary
+    // Bilingual Text Dictionary (Pure Chinese for 'tc')
     const I18N = {
-      tc: {
-        appTitle: "Convex Lens Optics Simulator & Interactive Quiz / 凸透鏡成像模擬器及互動小測",
-        portTitle: "請將裝置轉為橫向",
-        portDesc: "以獲得最佳光學模擬操作體驗",
-        st1: "1. 移動物體",
-        st2: "2. 回答預測",
-        st3: "3. 按 Play 驗證",
-        canvasHead: "光學畫布 - 焦距 f = 5.0 cm",
-        snapHint: "網格對齊: 0.5cm (f, 2f 自動磁吸)",
-        lockHint: "🔒 播放中 (按下重置即可編輯)",
-        presetLbl: "物距快捷選單:",
-        pInf: "u = ∞ (無限遠)",
-        r1: "規則 1: 平行主軸光線",
-        r2: "規則 2: 穿過透鏡中心光線",
-        r3: "規則 3: 穿過焦點光線",
-        quizTitle: "像的 4 大特徵預測",
-        quizSub: "按 Play 前須先完成預測",
-        alertMsg: "請先回答所有 4 條預測題目！",
-        q1: "1. 放大率:",
-        optMag1: "放大", optMag2: "縮小", optMag3: "等大",
-        q2: "2. 方向:",
-        optOri1: "正立", optOri2: "倒立",
-        q3: "3. 性質:",
-        optNat1: "實像", optNat2: "虛像",
-        q4: "4. 像的位置:",
-        optPos1: "鏡前 / 與物體同側", optPos2: "在 f", optPos3: "在 f 與 2f 之間", optPos4: "在 2f", optPos5: "在 2f 外", optPos6: "在無限遠",
-        playBtn: "▶ 開始驗證",
-        resetBtn: "🔄 重置",
-        lblU: "物距 (u)",
-        lblV: "像距 (v)",
-        lblM: "線性放大率 (m)",
-        outsideCanvas: "超出畫布",
-        atInfinity: "無限遠",
-        correct: "正確",
-        incorrect: "錯誤",
-        correctAnsPrefix: "正確答案：",
-        objLabel: "物體",
-        realImgLabel: "實像",
-        virtImgLabel: "虛像",
-        pointImgLabel: "點像",
-        infObjBanner: "⚡ 物體在無限遠 (u = ∞)"
-      },
       en: {
         appTitle: "Convex Lens Optics Simulator & Interactive Quiz / 凸透鏡成像模擬器及互動小測",
+        modeLearn: "📖 Learning Mode",
+        modeQuiz: "📝 Quiz Mode",
         portTitle: "Please rotate your device",
-        portDesc: "For the best optics simulation experience",
-        st1: "1. Move Object",
-        st2: "2. Answer Quiz",
-        st3: "3. Press Play to Verify",
-        canvasHead: "Optical Canvas - Focal Length f = 5.0 cm",
-        snapHint: "Grid Snap: 0.5cm (Auto-snap at f & 2f)",
+        portDesc: "For the best HKDSE Optics simulation experience",
+        st1: "Move Object",
+        st2: "Answer Quiz",
+        st3: "Press Play to Verify",
         lockHint: "🔒 Locked during Play (Press Reset to edit)",
-        presetLbl: "Object Distance Presets:",
-        pInf: "u = ∞ (At infinity)",
+        presetLbl: "Presets:",
         r1: "Rule 1: Parallel Ray",
         r2: "Rule 2: Central Ray",
         r3: "Rule 3: Focal Ray",
         quizTitle: "Predict Image Characteristics",
-        quizSub: "Answer all before pressing Play",
+        quizSub: "Answer all before Play",
         alertMsg: "Please answer all 4 quiz questions first!",
         q1: "1. Magnification:",
         optMag1: "Magnified", optMag2: "Diminished", optMag3: "Same size",
@@ -803,48 +826,97 @@
         q3: "3. Nature:",
         optNat1: "Real", optNat2: "Virtual",
         q4: "4. Image Position:",
-        optPos1: "Same side as object", optPos2: "At f", optPos3: "Between f & 2f", optPos4: "At 2f", optPos5: "Beyond 2f", optPos6: "At infinity",
+        optPos1: "Same side", optPos2: "At f", optPos3: "Between f & 2f", optPos4: "At 2f", optPos5: "Beyond 2f", optPos6: "At infinity",
         playBtn: "▶ Play & Verify",
         resetBtn: "🔄 Reset",
-        lblU: "Object distance (u)",
-        lblV: "Image distance (v)",
+        lblU: "Object Distance (u)",
+        lblV: "Image Distance (v)",
         lblM: "Magnification (m)",
         outsideCanvas: "Outside canvas",
         atInfinity: "At infinity",
         correct: "Correct",
         incorrect: "Incorrect",
         correctAnsPrefix: "Correct answer: ",
-        objLabel: "Object",
-        realImgLabel: "Real Image",
-        virtImgLabel: "Virtual Image",
-        pointImgLabel: "Point Image",
-        infObjBanner: "⚡ Object at Infinity (u = ∞)"
+        learnPanelTitle: "HKDSE Optical Application",
+        appBadgeLbl: "Practical Device Application:",
+        formulaTitle: "Lens Formula & Calculation",
+        virtualNoteText: "ℹ️ Negative image distance v indicates a Virtual Image formed on the same side as the object.",
+        apps: {
+          telescope: "Astronomical Telescope Objective",
+          camera: "Camera / Human Eye",
+          photocopier: "Photocopier (1:1 Copy)",
+          projector: "Projector / Microscope Objective",
+          spotlight: "Searchlight / Spotlight Beam",
+          magnifier: "Magnifying Glass"
+        }
+      },
+      tc: {
+        appTitle: "凸透鏡成像模擬器及互動小測",
+        modeLearn: "📖 即時學習模式",
+        modeQuiz: "📝 測驗預測模式",
+        portTitle: "請將裝置轉為橫向",
+        portDesc: "以獲得最佳 HKDSE 光學模擬操作體驗",
+        st1: "移動物件",
+        st2: "回答題目",
+        st3: "按 Play 驗證",
+        lockHint: "🔒 播放中 (按下 Reset 才能調整物件)",
+        presetLbl: "快捷位置:",
+        r1: "規則 1: 平行主軸光線",
+        r2: "規則 2: 過透鏡中心光線",
+        r3: "規則 3: 過焦點光線",
+        quizTitle: "像的 4 大特徵預測",
+        quizSub: "按 Play 前必須全答",
+        alertMsg: "請先回答所有 4 個特徵題目！",
+        q1: "1. 放大率:",
+        optMag1: "放大", optMag2: "縮小", optMag3: "等大",
+        q2: "2. 方向:",
+        optOri1: "正立", optOri2: "倒立",
+        q3: "3. 性質:",
+        optNat1: "實像", optNat2: "虛像",
+        q4: "4. 像的位置:",
+        optPos1: "鏡前同側", optPos2: "在 f", optPos3: "在 f 與 2f 之間", optPos4: "在 2f", optPos5: "2f 外", optPos6: "無限遠",
+        playBtn: "▶ 按此驗證",
+        resetBtn: "🔄 重置",
+        lblU: "物距 (u)",
+        lblV: "像距 (v)",
+        lblM: "線性放大率 (m)",
+        outsideCanvas: "超出畫布邊界",
+        atInfinity: "無限遠",
+        correct: "正確",
+        incorrect: "錯誤",
+        correctAnsPrefix: "正確答案：",
+        learnPanelTitle: "HKDSE 光學應用範例",
+        appBadgeLbl: "實際應用儀器：",
+        formulaTitle: "透鏡公式與實時計算",
+        virtualNoteText: "ℹ️ 負像距 v 代表折射光線發散，延伸交點形成同側虛像。",
+        apps: {
+          telescope: "天文望遠鏡物鏡",
+          camera: "照相機 / 人眼",
+          photocopier: "影印機 原大複製",
+          projector: "投影機 / 顯微鏡物鏡",
+          spotlight: "搜尋燈 / 聚光燈平行光束",
+          magnifier: "放大鏡"
+        }
       }
     };
 
+    // Setup Canvas Dimensions dynamically without hardcoded element style feedback loops
     function setupCanvas() {
       const wrapper = document.querySelector('.canvas-wrapper');
       const rect = wrapper.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
 
-      // Dynamic fluid width configuration
-      canvasWidth = Math.max(300, rect.width);
-      canvasHeight = 420;
+      canvasWidth = rect.width;
+      canvasHeight = 380;
 
-      canvas.width = Math.round(canvasWidth * dpr);
-      canvas.height = Math.round(canvasHeight * dpr);
+      canvas.width = canvasWidth * dpr;
+      canvas.height = canvasHeight * dpr;
 
       ctx.scale(dpr, dpr);
 
-      // DYNAMIC RESPONSIVE GEOMETRY SCALE:
-      // Allocate ~13.8cm span on left of lens (fits u = 12.5cm max drag + padding)
-      // and ~16.2cm span on right of lens (fits f, 2f, 3f + padding).
-      const leftCm = 13.8;
-      const rightCm = 16.2;
-      const totalCm = leftCm + rightCm; // 30cm total horizontal span
-
-      SCALE = canvasWidth / totalCm; // Dynamic pixels-per-cm
-      lensX = SCALE * leftCm; // Lens dynamically positioned so object NEVER goes off-canvas
+      // Allocate 30 cm total horizontal span across canvas: 13.8 cm left of lens, 16.2 cm right
+      SCALE = canvasWidth / 30.0;
+      lensX = SCALE * 13.8;
       axisY = canvasHeight * 0.5;
     }
 
@@ -857,10 +929,45 @@
       });
       initDragEvents();
       updateLanguage();
-      draw();
+      switchMode('learning');
     });
 
-    // Language Toggle & Translation
+    // Switch between Learning Mode & Quiz Mode
+    function switchMode(mode) {
+      currentMode = mode;
+
+      const learnBtn = document.getElementById('mode-learn-btn');
+      const quizBtn = document.getElementById('mode-quiz-btn');
+      const learnPanel = document.getElementById('learning-panel');
+      const quizPanel = document.getElementById('quiz-panel');
+      const stepsBar = document.getElementById('steps-bar-element');
+
+      if (mode === 'learning') {
+        learnBtn.classList.add('active');
+        quizBtn.classList.remove('active');
+        learnPanel.style.display = 'block';
+        quizPanel.style.display = 'none';
+        stepsBar.style.display = 'none';
+        
+        isPlaying = false;
+        animProgress = 1.0;
+        document.getElementById('lock-hint').style.display = 'none';
+        document.querySelectorAll('.preset-btn').forEach(btn => btn.style.opacity = '1');
+      } else {
+        quizBtn.classList.add('active');
+        learnBtn.classList.remove('active');
+        quizPanel.style.display = 'block';
+        learnPanel.style.display = 'none';
+        stepsBar.style.display = 'flex';
+
+        handleReset();
+      }
+
+      updateDataDisplay();
+      draw();
+    }
+
+    // Toggle Language
     function toggleLanguage() {
       currentLang = currentLang === 'en' ? 'tc' : 'en';
       document.getElementById('lang-toggle-btn').innerText = currentLang === 'en' ? '繁體中文' : 'English';
@@ -871,6 +978,9 @@
     function updateLanguage() {
       const t = I18N[currentLang];
       document.getElementById('app-title').innerText = t.appTitle;
+      document.getElementById('mode-learn-btn').innerText = t.modeLearn;
+      document.getElementById('mode-quiz-btn').innerText = t.modeQuiz;
+
       document.getElementById('port-title').innerText = t.portTitle;
       document.getElementById('port-desc').innerText = t.portDesc;
 
@@ -878,12 +988,9 @@
       document.getElementById('st-2').innerText = t.st2;
       document.getElementById('st-3').innerText = t.st3;
 
-      document.getElementById('canvas-heading').innerText = t.canvasHead;
-      document.getElementById('snap-hint').innerText = t.snapHint;
       document.getElementById('lock-hint').innerText = t.lockHint;
-
       document.getElementById('preset-lbl').innerText = t.presetLbl;
-      document.getElementById('p-inf').innerText = t.pInf;
+
       document.getElementById('r1-lbl').innerText = t.r1;
       document.getElementById('r2-lbl').innerText = t.r2;
       document.getElementById('r3-lbl').innerText = t.r3;
@@ -920,14 +1027,19 @@
       document.getElementById('lbl-v').innerText = t.lblV;
       document.getElementById('lbl-m').innerText = t.lblM;
 
+      document.getElementById('learn-panel-title').innerText = t.learnPanelTitle;
+      document.getElementById('app-badge-lbl').innerText = t.appBadgeLbl;
+      document.getElementById('formula-title').innerText = t.formulaTitle;
+      document.getElementById('virtual-explain-note').innerText = t.virtualNoteText;
+
       updateDataDisplay();
     }
 
+    // Set Presets
     function setPreset(val) {
-      if (isPlaying) return; // Locked during Play
+      if (currentMode === 'quiz' && isPlaying) return;
 
       objU = val;
-      // Highlight preset button
       document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
       if (val === 'inf') document.getElementById('p-inf').classList.add('active');
       else if (val === 12) document.getElementById('p-12').classList.add('active');
@@ -941,15 +1053,12 @@
     }
 
     function selectOpt(category, value) {
-      if (isPlaying) return; // Locked during play
+      if (isPlaying) return;
 
       quizAnswers[category] = value;
-
-      // Clear alert highlights if user answers
       document.getElementById(`qitem-${category}`).classList.remove('unanswered-error');
       document.getElementById('quiz-warning-alert').style.display = 'none';
 
-      // Update button selection state
       const item = document.getElementById(`qitem-${category}`);
       item.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
       
@@ -965,7 +1074,7 @@
       }
     }
 
-    // Calculate Exact Physical Optics Values
+    // Physics Engine Calculation
     function calcPhysics() {
       if (objU === 'inf') {
         return { v: FOCAL_LENGTH, m: 0, isInf: false, isParallel: true };
@@ -986,12 +1095,12 @@
       const valM = document.getElementById('val-m');
 
       if (objU === 'inf') {
-        valU.innerText = `∞ (${t.atInfinity})`;
+        valU.innerText = "∞";
       } else {
         valU.innerText = `${objU.toFixed(1)} cm`;
       }
 
-      if (!isPlaying) {
+      if (currentMode === 'quiz' && !isPlaying) {
         valV.innerText = "--";
         valM.innerText = "--";
         return;
@@ -1005,16 +1114,49 @@
       } else {
         const vPx = phys.v * SCALE;
         const isOutside = (lensX + vPx > canvasWidth) || (lensX + vPx < 0);
-        
-        valV.innerText = `${phys.v.toFixed(1)} cm ${isOutside ? `(${t.outsideCanvas})` : ''}`;
-        valM.innerText = phys.m === 0 ? "0" : `${phys.m.toFixed(2)}x`;
+        valV.innerText = `${phys.v > 0 ? '+' : ''}${phys.v.toFixed(1)} cm ${isOutside ? `(${t.outsideCanvas})` : ''}`;
+        valM.innerText = phys.m === 0 ? "0" : `${phys.m.toFixed(2)}×`;
+      }
+
+      // Update Learning Panel Formula & Application Badge
+      if (currentMode === 'learning') {
+        const appVal = document.getElementById('app-badge-val');
+        const subLine = document.getElementById('calc-sub-line');
+        const vLine = document.getElementById('calc-v-line');
+        const mLine = document.getElementById('calc-m-line');
+        const vNote = document.getElementById('virtual-explain-note');
+
+        if (objU === 'inf') {
+          appVal.innerText = t.apps.telescope;
+          subLine.innerText = "1/5.0 = 1/∞ + 1/v  ⇒  1/v = 1/5.0";
+          vLine.innerHTML = "<strong>v = +5.00 cm</strong>";
+          mLine.innerHTML = "<strong>m = 0×</strong>";
+          vNote.style.display = 'none';
+        } else if (phys.isInf) {
+          appVal.innerText = t.apps.spotlight;
+          subLine.innerText = "1/5.0 = 1/5.0 + 1/v  ⇒  1/v = 0";
+          vLine.innerHTML = "<strong>v = ∞</strong>";
+          mLine.innerHTML = "<strong>m = ∞</strong>";
+          vNote.style.display = 'none';
+        } else {
+          if (objU > 10) appVal.innerText = t.apps.camera;
+          else if (Math.abs(objU - 10) < 0.001) appVal.innerText = t.apps.photocopier;
+          else if (objU > 5) appVal.innerText = t.apps.projector;
+          else appVal.innerText = t.apps.magnifier;
+
+          subLine.innerText = `1/5.0 = 1/${objU.toFixed(1)} + 1/v`;
+          vLine.innerHTML = `<strong>v = ${phys.v > 0 ? '+' : ''}${phys.v.toFixed(2)} cm</strong> (${phys.v > 0 ? 'Real' : 'Virtual'})`;
+          mLine.innerHTML = `<strong>m = |v/u| = ${phys.m.toFixed(2)}×</strong>`;
+
+          vNote.style.display = phys.v < 0 ? 'block' : 'none';
+        }
       }
     }
 
+    // Play & Reset Handlers for Quiz Mode
     function handlePlay() {
       if (isPlaying) return;
 
-      // Validate if all 4 quiz questions are answered
       const unans = [];
       if (!quizAnswers.mag) unans.push('mag');
       if (!quizAnswers.ori) unans.push('ori');
@@ -1030,22 +1172,18 @@
       }
 
       document.getElementById('quiz-warning-alert').style.display = 'none';
-
-      // Lock UI State
       isPlaying = true;
       document.getElementById('lock-hint').style.display = 'block';
       document.querySelectorAll('.preset-btn').forEach(btn => btn.style.opacity = '0.5');
 
-      // Grade Quiz
       gradeQuiz();
       updateDataDisplay();
 
-      // Start Ray Animation
       animProgress = 0.0;
       if (animReqId) cancelAnimationFrame(animReqId);
 
       const startTime = performance.now();
-      const duration = 1200; // ms
+      const duration = 1000;
 
       function animateRays(now) {
         const elapsed = now - startTime;
@@ -1069,7 +1207,6 @@
       document.querySelectorAll('.preset-btn').forEach(btn => btn.style.opacity = '1');
       document.getElementById('quiz-warning-alert').style.display = 'none';
 
-      // Clear Quiz & Badges
       quizAnswers = { mag: null, ori: null, nat: null, pos: null };
       ['mag', 'ori', 'nat', 'pos'].forEach(cat => {
         const item = document.getElementById(`qitem-${cat}`);
@@ -1135,19 +1272,20 @@
         } else {
           badge.innerText = `✗ ${t.incorrect}`;
           badge.className = 'quiz-result-badge incorrect';
-          note.innerText = `${t.correctAnsPrefix} ${optionLabels[cat][rightAns]}`;
+          note.innerText = `${t.correctAnsPrefix}${optionLabels[cat][rightAns]}`;
           note.style.display = 'block';
         }
       });
     }
 
+    // Canvas Rendering Engine
     function draw() {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-      // 1. Background Grid
+      // 1. Grid
       ctx.strokeStyle = '#f1f5f9';
       ctx.lineWidth = 1;
-      const gridSize = 13; // 0.5cm grid
+      const gridSize = SCALE * 0.5; // 0.5 cm grid
       for (let x = 0; x < canvasWidth; x += gridSize) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvasHeight); ctx.stroke();
       }
@@ -1158,69 +1296,64 @@
       // 2. Principal Axis
       ctx.strokeStyle = '#334155';
       ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(0, axisY);
-      ctx.lineTo(canvasWidth, axisY);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, axisY); ctx.lineTo(canvasWidth, axisY); ctx.stroke();
 
-      // 3. Focal Points & Axis Labels
+      // 3. Focal Points & Axis Tick Markers (f, 2f, 3f, 4f)
       const fPx = FOCAL_LENGTH * SCALE;
-      const focalPoints = [
+      const ticks = [
         { x: lensX - 2 * fPx, label: '2f' },
         { x: lensX - fPx, label: 'f' },
         { x: lensX + fPx, label: 'f' },
         { x: lensX + 2 * fPx, label: '2f' },
-        { x: lensX + 3 * fPx, label: '3f' },
-        { x: lensX + 4 * fPx, label: '4f' }
+        { x: lensX + 3 * fPx, label: '3f' }
       ];
 
-      focalPoints.forEach(pt => {
-        if (pt.x >= 15 && pt.x <= canvasWidth - 15) {
+      ticks.forEach(pt => {
+        if (pt.x >= 0 && pt.x <= canvasWidth) {
           ctx.fillStyle = '#0f172a';
-          ctx.beginPath();
-          ctx.arc(pt.x, axisY, pt.label.endsWith('f') ? 4 : 3, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.beginPath(); ctx.arc(pt.x, axisY, 4, 0, Math.PI * 2); ctx.fill();
 
-          ctx.font = 'bold 13px sans-serif';
-          ctx.fillStyle = pt.label === 'f' || pt.label === '2f' ? '#1e293b' : '#64748b';
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillStyle = '#1e293b';
           ctx.textAlign = 'center';
-          ctx.fillText(pt.label, pt.x, axisY + 22);
+          ctx.fillText(pt.label, pt.x, axisY + 20);
         }
       });
 
       // 4. Convex Lens
       drawConvexLens();
 
-      // Object Coordinates (NEVER on axis: 4 non-zero heights)
-      let objX, objY, objHeight;
-      const hOffsets = [H_SPREAD, H_SPREAD * 0.5, -H_SPREAD * 0.5, -H_SPREAD];
-      objHeight = hOffsets[objYLevel];
+      // 5. Object Coordinates
+      const objHeight = hOffsets[objYLevel]; // Always non-zero off-axis height
+      let objX;
 
       if (objU === 'inf') {
         drawInfinityObject();
       } else {
         objX = lensX - objU * SCALE;
-        objY = axisY - objHeight;
-        drawBulbObject(objX, axisY, objHeight, isPlaying);
+        drawBulbObject(objX, axisY, objHeight, currentMode === 'learning' || isPlaying);
       }
 
-      // 5. Light Rays & Formed Image
-      if (isPlaying) {
+      // 6. Rays & Image Drawing
+      const shouldDrawRays = (currentMode === 'learning') || (currentMode === 'quiz' && isPlaying);
+
+      if (shouldDrawRays) {
         const phys = calcPhysics();
 
         if (objU === 'inf') {
           drawParallelRaysFromInfinity();
           drawFormedImage(lensX + fPx, axisY, 0, true);
         } else if (phys.isInf) {
-          drawParallelRefractedRays(objX, objY);
+          drawParallelRefractedRays(objX, axisY - objHeight);
         } else {
           const imgX = lensX + phys.v * SCALE;
           const imgHeight = -phys.v / objU * objHeight;
+          const objY = axisY - objHeight;
           const imgY = axisY - imgHeight;
 
           drawRays(objX, objY, imgX, imgY, phys.v < 0);
 
-          if (animProgress >= 0.8) {
+          if (animProgress >= 0.75) {
             drawFormedImage(imgX, axisY, imgHeight, false, phys.v < 0);
           }
         }
@@ -1233,117 +1366,91 @@
       const lensBottom = axisY + lensHeight / 2;
 
       const grad = ctx.createLinearGradient(lensX - 12, 0, lensX + 12, 0);
-      grad.addColorStop(0, 'rgba(191, 219, 254, 0.4)');
-      grad.addColorStop(0.5, 'rgba(59, 130, 246, 0.6)');
-      grad.addColorStop(1, 'rgba(191, 219, 254, 0.4)');
+      grad.addColorStop(0, 'rgba(191, 219, 254, 0.35)');
+      grad.addColorStop(0.5, 'rgba(59, 130, 246, 0.55)');
+      grad.addColorStop(1, 'rgba(191, 219, 254, 0.35)');
 
       ctx.beginPath();
       ctx.moveTo(lensX, lensTop);
-      ctx.quadraticCurveTo(lensX + 18, axisY, lensX, lensBottom);
-      ctx.quadraticCurveTo(lensX - 18, axisY, lensX, lensTop);
+      ctx.quadraticCurveTo(lensX + 16, axisY, lensX, lensBottom);
+      ctx.quadraticCurveTo(lensX - 16, axisY, lensX, lensTop);
       ctx.fillStyle = grad;
       ctx.fill();
       ctx.strokeStyle = '#2563eb';
-      ctx.lineWidth = 1.8;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      ctx.strokeStyle = 'rgba(37, 99, 235, 0.4)';
+      ctx.strokeStyle = 'rgba(37, 99, 235, 0.35)';
       ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(lensX, 10);
-      ctx.lineTo(lensX, canvasHeight - 10);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lensX, 10); ctx.lineTo(lensX, canvasHeight - 10); ctx.stroke();
       ctx.setLineDash([]);
     }
 
     function drawBulbObject(x, baseY, height, glowing) {
-      const t = I18N[currentLang];
       const topY = baseY - height;
 
       ctx.strokeStyle = '#0f172a';
       ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(x, baseY);
-      ctx.lineTo(x, topY);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, baseY); ctx.lineTo(x, topY); ctx.stroke();
 
       ctx.fillStyle = glowing ? '#f59e0b' : '#64748b';
-      ctx.beginPath();
-      ctx.arc(x, topY, 9, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#0f172a';
-      ctx.lineWidth = 1.8;
-      ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, topY, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 1.5; ctx.stroke();
 
       if (glowing) {
         ctx.fillStyle = 'rgba(251, 191, 36, 0.35)';
-        ctx.beginPath();
-        ctx.arc(x, topY, 18, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(x, topY, 15, 0, Math.PI * 2); ctx.fill();
       }
 
       ctx.font = 'bold 12px sans-serif';
       ctx.fillStyle = '#0f172a';
       ctx.textAlign = 'center';
-      ctx.fillText(t.objLabel, x, baseY + (height >= 0 ? 18 : -12));
+      ctx.fillText('Object', x, baseY + (height >= 0 ? 18 : -10));
     }
 
     function drawInfinityObject() {
-      const t = I18N[currentLang];
       ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 14px sans-serif';
+      ctx.font = 'bold 13px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(t.infObjBanner, 15, 30);
+      ctx.fillText('⚡ Incoming Parallel Rays (u = ∞)', 12, 28);
 
       ctx.strokeStyle = '#94a3b8';
       ctx.setLineDash([4, 4]);
-      for (let y = axisY - 100; y <= axisY + 100; y += 50) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(70, y);
-        ctx.stroke();
+      for (let y = axisY - 80; y <= axisY + 80; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(50, y); ctx.stroke();
       }
       ctx.setLineDash([]);
     }
 
     function drawFormedImage(x, baseY, height, isPoint, isVirtual) {
-      const t = I18N[currentLang];
       if (isPoint) {
-        ctx.fillStyle = '#15803d';
-        ctx.beginPath();
-        ctx.arc(x, baseY, 7, 0, Math.PI * 2);
-        ctx.fill();
-
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath(); ctx.arc(x, baseY, 6, 0, Math.PI * 2); ctx.fill();
         ctx.font = 'bold 12px sans-serif';
-        ctx.fillText(t.pointImgLabel, x, baseY - 14);
+        ctx.fillText('Point Image', x, baseY - 12);
         return;
       }
 
       const topY = baseY - height;
 
       ctx.save();
-      ctx.globalAlpha = 0.65;
+      ctx.globalAlpha = 0.7;
 
-      ctx.strokeStyle = isVirtual ? '#0072b2' : '#15803d';
+      ctx.strokeStyle = isVirtual ? '#2563eb' : '#16a34a';
       ctx.lineWidth = 3;
       if (isVirtual) ctx.setLineDash([6, 4]);
 
-      ctx.beginPath();
-      ctx.moveTo(x, baseY);
-      ctx.lineTo(x, topY);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, baseY); ctx.lineTo(x, topY); ctx.stroke();
 
-      ctx.fillStyle = isVirtual ? '#56b4e9' : '#4ade80';
-      ctx.beginPath();
-      ctx.arc(x, topY, 8, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.fillStyle = isVirtual ? '#60a5fa' : '#4ade80';
+      ctx.beginPath(); ctx.arc(x, topY, 8, 0, Math.PI * 2); ctx.fill();
 
       ctx.restore();
 
       ctx.font = 'bold 12px sans-serif';
-      ctx.fillStyle = isVirtual ? '#0072b2' : '#15803d';
+      ctx.fillStyle = isVirtual ? '#1d4ed8' : '#15803d';
       ctx.textAlign = 'center';
-      ctx.fillText(isVirtual ? t.virtImgLabel : t.realImgLabel, x, topY + (height >= 0 ? -12 : 20));
+      ctx.fillText(isVirtual ? 'Virtual Image' : 'Real Image', x, topY + (height >= 0 ? -12 : 20));
     }
 
     function drawRays(objX, objY, imgX, imgY, isVirtual) {
@@ -1354,10 +1461,6 @@
       const r2 = document.getElementById('ray2-check').checked;
       const r3 = document.getElementById('ray3-check').checked;
 
-      const c1 = '#d95f02'; // Rule 1: Vermilion / Orange
-      const c2 = '#0072b2'; // Rule 2: Deep Sky Blue
-      const c3 = '#cc79a7'; // Rule 3: Magenta
-
       const phase1 = Math.min(1.0, animProgress * 2.0);
       const phase2 = Math.max(0.0, (animProgress - 0.5) * 2.0);
 
@@ -1367,68 +1470,55 @@
         const curY = y1 + (y2 - y1) * progress;
 
         ctx.strokeStyle = color;
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 2;
         if (dashed) ctx.setLineDash([5, 5]);
         else ctx.setLineDash([]);
 
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(curX, curY);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(curX, curY); ctx.stroke();
         ctx.setLineDash([]);
       }
 
-      // Rule 1
+      // Rule 1: Parallel Ray (Vermilion/Orange)
       if (r1) {
-        drawSeg(objX, objY, lensX, objY, c1, phase1);
+        drawSeg(objX, objY, lensX, objY, 'var(--ray-1)', phase1);
 
         if (!isVirtual) {
-          const targetX = canvasWidth;
           const slope = (imgY - objY) / (imgX - lensX);
-          const targetY = objY + slope * (targetX - lensX);
-          drawSeg(lensX, objY, targetX, targetY, c1, phase2);
+          const targetY = objY + slope * (canvasWidth - lensX);
+          drawSeg(lensX, objY, canvasWidth, targetY, 'var(--ray-1)', phase2);
         } else {
           const slope = (objY - imgY) / (lensX - imgX);
           const forwardY = objY + slope * (canvasWidth - lensX);
-          drawSeg(lensX, objY, canvasWidth, forwardY, c1, phase2);
-
-          if (phase2 > 0) {
-            drawSeg(lensX, objY, imgX, imgY, c1, phase2, true);
-          }
+          drawSeg(lensX, objY, canvasWidth, forwardY, 'var(--ray-1)', phase2);
+          if (phase2 > 0) drawSeg(lensX, objY, imgX, imgY, 'var(--ray-1)', phase2, true);
         }
       }
 
-      // Rule 2
+      // Rule 2: Central Ray (Sky Blue)
       if (r2) {
         const slope = (axisY - objY) / (lensX - objX);
         const forwardY = axisY + slope * (canvasWidth - lensX);
 
-        drawSeg(objX, objY, lensX, axisY, c2, phase1);
-        drawSeg(lensX, axisY, canvasWidth, forwardY, c2, phase2);
-
-        if (isVirtual && phase2 > 0) {
-          drawSeg(lensX, axisY, imgX, imgY, c2, phase2, true);
-        }
+        drawSeg(objX, objY, lensX, axisY, 'var(--ray-2)', phase1);
+        drawSeg(lensX, axisY, canvasWidth, forwardY, 'var(--ray-2)', phase2);
+        if (isVirtual && phase2 > 0) drawSeg(lensX, axisY, imgX, imgY, 'var(--ray-2)', phase2, true);
       }
 
-      // Rule 3
+      // Rule 3: Focal Ray (Magenta)
       if (r3) {
         if (!isVirtual) {
           const slope = (axisY - objY) / (fFront - objX);
           const lensY = objY + slope * (lensX - objX);
 
-          drawSeg(objX, objY, lensX, lensY, c3, phase1);
-          drawSeg(lensX, lensY, canvasWidth, lensY, c3, phase2);
+          drawSeg(objX, objY, lensX, lensY, 'var(--ray-3)', phase1);
+          drawSeg(lensX, lensY, canvasWidth, lensY, 'var(--ray-3)', phase2);
         } else {
           const slope = (objY - axisY) / (objX - fFront);
           const lensY = axisY + slope * (lensX - fFront);
 
-          drawSeg(objX, objY, lensX, lensY, c3, phase1);
-          drawSeg(lensX, lensY, canvasWidth, lensY, c3, phase2);
-
-          if (phase2 > 0) {
-            drawSeg(lensX, lensY, imgX, imgY, c3, phase2, true);
-          }
+          drawSeg(objX, objY, lensX, lensY, 'var(--ray-3)', phase1);
+          drawSeg(lensX, lensY, canvasWidth, lensY, 'var(--ray-3)', phase2);
+          if (phase2 > 0) drawSeg(lensX, lensY, imgX, imgY, 'var(--ray-3)', phase2, true);
         }
       }
     }
@@ -1439,23 +1529,22 @@
       const phase1 = Math.min(1.0, animProgress * 2.0);
       const phase2 = Math.max(0.0, (animProgress - 0.5) * 2.0);
 
-      const rayYOffsets = [-70, -35, 35, 70];
-      const colors = ['#d95f02', '#0072b2', '#cc79a7', '#d95f02'];
+      const rayYOffsets = [-60, -30, 30, 60];
+      const colors = ['var(--ray-1)', 'var(--ray-2)', 'var(--ray-3)', 'var(--ray-1)'];
 
       rayYOffsets.forEach((yOff, i) => {
         const startY = axisY + yOff;
         ctx.strokeStyle = colors[i];
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 2;
 
-        const curX1 = 0 + (lensX - 0) * phase1;
+        const curX1 = lensX * phase1;
         ctx.beginPath(); ctx.moveTo(0, startY); ctx.lineTo(curX1, startY); ctx.stroke();
 
         if (phase2 > 0) {
-          const targetX = canvasWidth;
           const slope = (axisY - startY) / (fBack - lensX);
           const targetY = startY + slope * (canvasWidth - lensX);
 
-          const curX2 = lensX + (targetX - lensX) * phase2;
+          const curX2 = lensX + (canvasWidth - lensX) * phase2;
           const curY2 = startY + (targetY - startY) * phase2;
 
           ctx.beginPath(); ctx.moveTo(lensX, startY); ctx.lineTo(curX2, curY2); ctx.stroke();
@@ -1466,12 +1555,10 @@
     function drawParallelRefractedRays(objX, objY) {
       const phase1 = Math.min(1.0, animProgress * 2.0);
       const phase2 = Math.max(0.0, (animProgress - 0.5) * 2.0);
-
       const fPx = FOCAL_LENGTH * SCALE;
       const fBack = lensX + fPx;
 
-      ctx.strokeStyle = '#d95f02';
-      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = 'var(--ray-1)'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(objX, objY); ctx.lineTo(objX + (lensX - objX) * phase1, objY); ctx.stroke();
 
       if (phase2 > 0) {
@@ -1480,8 +1567,7 @@
         ctx.beginPath(); ctx.moveTo(lensX, objY); ctx.lineTo(lensX + (canvasWidth - lensX) * phase2, objY + (endY - objY) * phase2); ctx.stroke();
       }
 
-      ctx.strokeStyle = '#0072b2';
-      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = 'var(--ray-2)';
       ctx.beginPath(); ctx.moveTo(objX, objY); ctx.lineTo(objX + (lensX - objX) * phase1, objY + (axisY - objY) * phase1); ctx.stroke();
 
       if (phase2 > 0) {
@@ -1491,6 +1577,7 @@
       }
     }
 
+    // Interactive Dragging
     function initDragEvents() {
       let isDragging = false;
 
@@ -1499,34 +1586,35 @@
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         return {
-          x: (clientX - rect.left) * (canvasWidth / rect.width),
-          y: (clientY - rect.top) * (canvasHeight / rect.height)
+          x: clientX - rect.left,
+          y: clientY - rect.top
         };
       }
 
       function handleStart(e) {
-        if (isPlaying) return;
+        if (currentMode === 'quiz' && isPlaying) return;
         if (objU === 'inf') return;
 
         const coords = getCanvasCoords(e);
         const currentObjX = lensX - objU * SCALE;
-        const hOffsets = [H_SPREAD, H_SPREAD * 0.5, -H_SPREAD * 0.5, -H_SPREAD];
         const currentObjY = axisY - hOffsets[objYLevel];
 
         const dist = Math.hypot(coords.x - currentObjX, coords.y - currentObjY);
-        if (dist < 45 || Math.abs(coords.x - currentObjX) < 25) {
+        if (dist < 40 || Math.abs(coords.x - currentObjX) < 24) {
           isDragging = true;
         }
       }
 
       function handleMove(e) {
-        if (!isDragging || isPlaying) return;
+        if (!isDragging) return;
+        if (currentMode === 'quiz' && isPlaying) return;
         e.preventDefault();
 
         const coords = getCanvasCoords(e);
 
+        // 1. Horizontal Distance Snap
         let rawU = (lensX - coords.x) / SCALE;
-        rawU = Math.max(1.0, Math.min(12.5, rawU));
+        rawU = Math.max(1.0, Math.min(12.5, rawU)); // Safe range
 
         if (Math.abs(rawU - 5.0) < 0.35) rawU = 5.0;
         else if (Math.abs(rawU - 10.0) < 0.35) rawU = 10.0;
@@ -1534,12 +1622,12 @@
 
         objU = rawU;
 
-        // 4 non-zero height levels
+        // 2. Vertical Level Snap (4 Non-Zero Levels)
         const relativeY = axisY - coords.y;
-        if (relativeY > H_SPREAD * 0.5) objYLevel = 0;
-        else if (relativeY > 0) objYLevel = 1;
-        else if (relativeY > -H_SPREAD * 0.5) objYLevel = 2;
-        else objYLevel = 3;
+        if (relativeY > 45) objYLevel = 0;      // Top (+70px)
+        else if (relativeY > 0) objYLevel = 1;  // Upper (+35px)
+        else if (relativeY > -45) objYLevel = 2;// Lower (-35px)
+        else objYLevel = 3;                     // Bottom (-70px)
 
         document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
         if (objU === 12) document.getElementById('p-12').classList.add('active');
